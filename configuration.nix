@@ -12,8 +12,8 @@
     # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = [ 
-    "https://mirror.sjtu.edu.cn/nix-channels/store"
     "https://mirrors.ustc.edu.cn/nix-channels/store"
+    "https://mirror.sjtu.edu.cn/nix-channels/store"
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store" 
     "https://cache.nixos.org/"
   ];
@@ -23,10 +23,10 @@
   # boot.loader.grub.enable = true;
   boot.loader = {
 	efi = {
-    		canTouchEfiVariables = true;
+    	canTouchEfiVariables = true;
 		efiSysMountPoint = "/boot";
 		
-    	};
+    };
 	grub = {
 		enable = true;
 		device = "nodev";  # install grub in current esp
@@ -52,12 +52,8 @@
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.initrd.systemd.enable = true;
-  swapDevices = [
-    {
-      device = "/var/swapfile";
-      size = 1024 * 24;
-    }
-  ];
+
+
   # networking.hostName = "nixos"; # Define your hostname.
   networking.hostName = "homepc";
   # Configure network connections interactively with nmcli or nmtui.
@@ -151,8 +147,8 @@
     tmux
     btop
     waybar
-    podman-tui
-    podman-compose
+    #podman-tui
+    #podman-compose
     tree
     fastfetch
     bash-completion

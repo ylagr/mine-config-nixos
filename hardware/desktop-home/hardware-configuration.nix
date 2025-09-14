@@ -17,7 +17,7 @@
   fileSystems."/" =
     { device = "tmpfs";
       fsType = "tmpfs";
-      options = [ "noatime" ];
+      options = [ "noatime" "mode=755"];
     };
 
   fileSystems."/boot" =

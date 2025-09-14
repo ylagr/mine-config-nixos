@@ -24,11 +24,8 @@
   boot.loader = {
 	efi = {
     	canTouchEfiVariables = true;
-		efiSysMountPoint = "/boot";
-		mirroredBoots = [{
-		  path = "/boot";
-		  devices = [ "nodev ];
-	    }];
+	efiSysMountPoint = "/boot";
+
     };
 	grub = {
 		enable = true;

@@ -78,7 +78,7 @@
   {
     enable = true;
     interval = "weekly";
-    fileSystems = [ "/home" "/nix" "/persistent" "/.snapshots" "/root" "/swap"]
+    fileSystems = [ "/home" "/nix" "/persistent" "/.snapshots" "/root" "/swap" ];
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

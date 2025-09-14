@@ -25,7 +25,10 @@
 	efi = {
     	canTouchEfiVariables = true;
 		efiSysMountPoint = "/boot";
-		
+		mirroredBoots = [{
+		  path = "/boot";
+		  devices = [ "nodev ];
+	    }];
     };
 	grub = {
 		enable = true;

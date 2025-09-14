@@ -12,8 +12,6 @@
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
-
-
   fileSystems."/" =
     { device = "tmpfs";
       fsType = "tmpfs";
@@ -68,6 +66,19 @@
       options = [ "subvolid=5" "subvol=/" ];
     };
 
+
+  fileSystems."/etc/nixos" =
+    { device = "/dev/disk/by-uuid/3b4d02e9-a1fa-43a2-b8f5-97f1de5baa63";
+      fsType = "btrfs";
+      options = [ "subvol=@nixos" "default" "noatime" "ssd" ];
+    };
+
+  fileSystems."/var/log" =
+    { device = "/dev/disk/by-uuid/3b4d02e9-a1fa-43a2-b8f5-97f1de5baa63";
+      fsType = "btrfs";
+      options = [ "subvol=@log" "default" "noatime" "ssd" ];
+    };
+
   swapDevices = [
     {
         device = "/swap/swapfile";
@@ -78,10 +89,11 @@
   {
     enable = true;
     interval = "weekly";
-    fileSystems = [ "/home" "/nix" "/persistent" "/.snapshots" "/root" "/swap" ];
+    fileSystems = [ "/home" "/nix" "/persistent" "/.snapshots" "/root" "/swap" "/etc/nixos" "/var/log" ];
   };
+
+
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
 }

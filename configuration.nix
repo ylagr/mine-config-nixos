@@ -42,7 +42,7 @@
     		    }
  		 '';
 		efiSupport = true;  # efi enable
-		gfxmodeEfi = "1024 * 768"; # grub start gui window size
+		gfxmodeEfi = "1280 * 1024"; # grub start gui window size
 	};
   };
 
@@ -128,7 +128,8 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ylagr = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "docker" "networkmanager" "libvirtd" ]; # Enable ‘sudo’ for the user.
+    hashedPasswordFile = "/persistent/user.ylagr";
   };
   programs.xwayland.enable = true;
   programs.firefox.enable = true;
@@ -174,7 +175,7 @@
   };
   # Enable the OpenSSH daemon.
   services.openssh = {
-    enable = true;
+    enable = false;
     ports = [ 22 ];
     settings = {
       PasswordAuthentication = true;
@@ -195,7 +196,12 @@
     enable = true;
     enableSSHSupport = true;
   };
-
+  # Clash-verge VPN
+  programs.clash-verge = {
+    enable = true;  #source value is true	#comment by ylagr
+	serviceMode = true;
+    tunMode = true;  #source value is true	 #comment by ylagr
+  };
   programs.labwc = {
     enable = true;
   };

@@ -147,6 +147,7 @@ android-tools
 qq
 emacs-pgtk
 podman-tui
+(flameshot.override { enableWlrSupport = true; })
 # support both 32-bit and 64-bit applications
     wineWowPackages.stable
 
@@ -174,7 +175,7 @@ podman-tui
     environment.variables = {    
 	QT_IM_MODULE = "fcitx";
     	# 通常，为了确保 fcitx 正常工作，建议同时设置以下变量：  
-	GTK_IM_MODULE = "fcitx";
+	#GTK_IM_MODULE = "fcitx";
 	XMODIFIERS = "@im=fcitx";  
     };
   #programs.emacs = {
@@ -221,7 +222,8 @@ gnomeExtensions.workspaces-indicator-by-open-apps
 #和window-list重复#gnomeExtensions.workspace-indicator
 gnomeExtensions.window-list
 gnomeExtensions.kimpanel
-
+gnomeExtensions.appindicator
+gnomeExtensions.indicator
 gnome-extension-manager
   ];
     # Nekoray VPN

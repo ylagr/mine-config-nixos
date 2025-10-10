@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =
@@ -28,6 +28,13 @@
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store" 
     "https://cache.nixos.org/"
   ];
+   #emacs-overlay = {
+   #   url = "github:nix-community/emacs-overlay";
+   #   inputs.nixpkgs.follows = "nixpkgs";
+   # };
+  #pkgs.overlays = [
+  #	emacs-overlay.overlays.emacs
+  #];
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -67,6 +74,7 @@
       fcitx5-gtk
     ];
   };
+  
 
   documentation = {
     dev.enable = true;
@@ -91,6 +99,11 @@
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  security.sudo = {
+  	enable = true;
+  	execWheelOnly = false;
+  	wheelNeedsPassword = false;
+  };
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -106,7 +119,9 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
-
+virtualisation.waydroid.enable = true;
+  # 启用 ARM 转译（Houdini）  
+  #virtualisation.waydroid.enableHoudini = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.suiwp = {
     isNormalUser = true;
@@ -115,14 +130,67 @@
     packages = with pkgs; [
     #  thunderbird
     jetbrains.idea-ultimate
+    jdk8
 telegram-desktop
 onedrive
 wpsoffice-cn
 fastfetch
 qqmusic
+podman-compose
+wechat
+appimage-run
+gopeed
+kdePackages.kdeconnect-kde
+waydroid
+waydroid-helper
+android-tools
+qq
+emacs-pgtk
+podman-tui
+# support both 32-bit and 64-bit applications
+    wineWowPackages.stable
+
+    # support 32-bit only
+    #wine
+
+    # support 64-bit only
+    #(wine.override { wineBuild = "wine64"; })
+
+    # support 64-bit only
+    #wine64
+
+    # wine-staging (version with experimental features)
+    #wineWowPackages.staging
+
+    # winetricks (all versions)
+    winetricks
+
+    # native wayland support (unstable)
+    #wineWowPackages.waylandFull
+    samba
     ];
   };
-
+  
+    environment.variables = {    
+	QT_IM_MODULE = "fcitx";
+    	# 通常，为了确保 fcitx 正常工作，建议同时设置以下变量：  
+	GTK_IM_MODULE = "fcitx";
+	XMODIFIERS = "@im=fcitx";  
+    };
+  #programs.emacs = {
+  #  enable = false;
+  #  package = pkgs.emacs-igc-pgtk.pkgs.withPackages (epkgs: with epkgs; [ 
+      # (eaf.withApplications [ eaf-browser eaf-pdf-viewer ])
+  #    telega
+  #    rime
+  #  ]);
+  #};
+ virtualisation.containers.enable = true;
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;
+    defaultNetwork.settings.dns_enabled = true;
+  };
   # Install firefox.
   programs.firefox.enable = true;
   qt = {

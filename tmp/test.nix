@@ -3,7 +3,16 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, lib, ... }:
-
+let
+  originalQQ = pkgs.qq;
+  qqWrapper = pkgs.writeShellScriptBin "qq" ''
+    export QT_IM_MODULE=fcitx
+    export GTK_IM_MODULE=fcitx
+    export XMODIFIERS='@im=fcitx'
+    rm -rf ~/.config/QQ/versions
+    exec ${originalQQ}/bin/qq "$@"
+  '';
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -121,13 +130,32 @@
   # services.xserver.libinput.enable = true;
 virtualisation.waydroid.enable = true;
   # 启用 ARM 转译（Houdini）  
-  #virtualisation.waydroid.enableHoudini = true;
+#virtualisation.waydroid.enableHoudini = true;
+programs.nix-ld.enable = true;
+programs.nix-ld.libraries = with pkgs; [
+  # 基础 C 库
+  glibc
+  # Java 通常还需要这些
+  zlib
+  xorg.libX11
+  xorg.libXext
+  xorg.libXrender
+  xorg.libXtst
+  xorg.libXi
+  alsa-lib
+  e2fsprogs
+  freetype
+  fontconfig    # 如果用 GUI 或 AWT/Swing，可能还需要更多
+];
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.suiwp = {
     isNormalUser = true;
     description = "suiwp";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" ];
     packages = with pkgs; [
+     
+      brasero
     #  thunderbird
     jetbrains.idea-ultimate
     jdk8
@@ -135,7 +163,7 @@ telegram-desktop
 onedrive
 wpsoffice-cn
 fastfetch
-qqmusic
+
 podman-compose
 wechat
 appimage-run
@@ -144,9 +172,10 @@ kdePackages.kdeconnect-kde
 waydroid
 waydroid-helper
 android-tools
-qq
+qqWrapper
 emacs-pgtk
 podman-tui
+snipaste
 (flameshot.override { enableWlrSupport = true; })
 # support both 32-bit and 64-bit applications
     wineWowPackages.stable
@@ -205,8 +234,17 @@ podman-tui
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
+    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+#  wget
+    # 光盘刻录
+     kdePackages.k3b
+    cdrtools
+    xorriso
+      dvdplusrwtools
+      udftools
+     # 光盘刻录end
+     
+  
   git
   vim
   btop
@@ -214,6 +252,7 @@ podman-tui
   bash-completion
   tree
   waybar
+  fuzzel
 #不兼容#gnomeExtensions.workspace-buttons-with-app-icons
 gnomeExtensions.worksets
 gnomeExtensions.window-title-is-back
@@ -224,8 +263,12 @@ gnomeExtensions.window-list
 gnomeExtensions.kimpanel
 gnomeExtensions.appindicator
 gnomeExtensions.indicator
-gnome-extension-manager
+gnomeExtensions.fuzzy-app-search
+  gnome-extension-manager
+  subversion
+  home-manager
   ];
+  
     # Nekoray VPN
   programs.nekoray = {
     enable = false;  #source value is true	#comment by ylagr
@@ -236,7 +279,7 @@ gnome-extension-manager
 	autoStart = true;
 	serviceMode = true;
   }; 
-  
+  programs.niri.enable = true;
   fonts.packages = with pkgs; [
     font-awesome
     noto-fonts
@@ -275,3 +318,7 @@ gnome-extension-manager
   system.stateVersion = "25.11"; # Did you read the comment?
 
 }
+
+
+
+  

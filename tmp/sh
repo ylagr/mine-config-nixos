@@ -1,2 +1,20 @@
 
+
 sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
+
+
+xorrisofs -R -J -o session1.iso /home/suiwp/code/java/yk/dr/build/prod/0.0.1/dr-server/dr-server-0.0.1.jar
+
+cdrecord -v -multi dev=/dev/sr0 session1.iso
+
+# 获取上一会话信息
+next=$(cdrecord dev=/dev/sr0 -msinfo)
+
+# 生成新 ISO（必须包含 -C 和 -M）
+xorrisofs -R -J -C "$next" -M /dev/sr0 -o session2.iso /path/to/new_files/
+
+# 追加刻录
+cdrecord -v -multi dev=/dev/sr0 session2.iso
+
+# 关闭光盘
+cdrecord -v -fix dev=/dev/sr0

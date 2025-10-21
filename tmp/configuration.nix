@@ -28,7 +28,20 @@ in
                 efiDeviceHandle = "BLK3";
         };
 
-  };
+ };
+ # support graphic
+ hardware.graphics = {
+   enable = true;
+   enable32Bit = true;
+   # ⚠️ 关键！
+ };
+ # 启用 OpenGL（32 位 + 64 位）
+ # hardware.opengl = {
+ #   enable = true;
+ #   driSupport = true;
+ #   driSupport32Bit = true;
+ #   # ⚠️ 关键！Steam 是 32 位应用
+ # };
     # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = [ 
@@ -128,7 +141,11 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
-virtualisation.waydroid.enable = true;
+  virtualisation.waydroid.enable = true;
+  # enable kvm
+  programs.virt-manager.enable = true;
+  
+  virtualisation.libvirtd.enable = true;
   # 启用 ARM 转译（Houdini）  
 #virtualisation.waydroid.enableHoudini = true;
 programs.nix-ld.enable = true;
@@ -152,9 +169,10 @@ programs.nix-ld.libraries = with pkgs; [
   users.users.suiwp = {
     isNormalUser = true;
     description = "suiwp";
-    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" ];
+    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
-     
+      wemeet
+      siyuan
       brasero
     #  thunderbird
     jetbrains.idea-ultimate
@@ -163,7 +181,7 @@ telegram-desktop
 onedrive
 wpsoffice-cn
 fastfetch
-
+steam
 podman-compose
 wechat
 appimage-run
@@ -251,7 +269,7 @@ snipaste
   wget
   bash-completion
   tree
-  waybar
+  # waybar
   fuzzel
 #不兼容#gnomeExtensions.workspace-buttons-with-app-icons
 gnomeExtensions.worksets

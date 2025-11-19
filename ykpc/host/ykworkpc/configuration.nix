@@ -12,6 +12,15 @@ let
     rm -rf ~/.config/QQ/versions
     exec ${originalQQ}/bin/qq "$@"
   '';
+  librime-lua5_3_compat = pkgs.librime-lua.override {
+    lua = pkgs.lua5_3_compat;
+  };
+  # librime-with-lua5_3_compat = pkgs.librime.overrideAttrs (oldAttrs: {
+    # buildInputs = (oldAttrs.buildInputs or []) ++ [ librime-lua5_3_compat ];
+  # });
+  librime-with-lua5_3_compat = pkgs.librime.override {
+    librime-lua = librime-lua5_3_compat;
+  };
 in
 {
   imports =
@@ -92,7 +101,7 @@ in
     fcitx5.waylandFrontend = true;
     fcitx5.addons = with pkgs; [
       rime-data
-      fcitx5-rime
+      (fcitx5-rime.override{librime=librime-with-lua5_3_compat;})
       fcitx5-gtk
     ];
   };
@@ -106,9 +115,11 @@ in
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
+  # 貌似是给托盘图标提供服务
+  services.udev.packages = with pkgs; [ gnome-settings-daemon ];
+  
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "cn";
@@ -165,14 +176,27 @@ in
     fontconfig    # 如果用 GUI 或 AWT/Swing，可能还需要更多
   ];
 
+  programs.gamescope = {
+    enable = true;
+    capSysNice = true;
+  };
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.suiwp = {
     isNormalUser = true;
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
+      # gamescope
+      wl-clipboard # 解决剪贴板问题
+      gpaste
+      multimarkdown
+      nix-tree
+      chezmoi
+      logseq
+      kitty
       wemeet
       virtiofsd # 解决kvm虚拟机挂载目录问题
+      lazarus
       siyuan
       pnpm
       nodejs_24
@@ -293,7 +317,13 @@ in
     subversion
     home-manager
     looking-glass-client
-  ];
+  ] ++ (with gnomeExtensions; [
+    dash-to-dock
+    night-theme-switcher
+    clipboard-history
+    # gnome-shell-extension-desktop-icons
+    gsconnect
+  ]);
   
   # Nekoray VPN
   programs.nekoray = {

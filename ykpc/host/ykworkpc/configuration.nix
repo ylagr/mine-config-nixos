@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, pkgs-new, nixpkgs-new, ... }:
 let
   originalQQ = pkgs.qq;
   qqWrapper = pkgs.writeShellScriptBin "qq" ''
@@ -20,6 +20,13 @@ let
   # });
   librime-with-lua5_3_compat = pkgs.librime.override {
     librime-lua = librime-lua5_3_compat;
+  };
+  fcitx5-rime-lua5_3_compat = pkgs.replaceDependencies {
+    drv = pkgs.fcitx5-rime;
+    replacements = [
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.callPackage pkgs.lua5_3_compat {};})
+      ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
+    ];
   };
 in
 {
@@ -101,7 +108,8 @@ in
     fcitx5.waylandFrontend = true;
     fcitx5.addons = with pkgs; [
       rime-data
-      (fcitx5-rime.override{librime=librime-with-lua5_3_compat;})
+      # (fcitx5-rime.override{librime=librime-with-lua5_3_compat;})
+      fcitx5-rime-lua5_3_compat
       fcitx5-gtk
     ];
   };
@@ -207,7 +215,7 @@ in
       jdk8
       telegram-desktop
       onedrive
-      wpsoffice-cn
+      pkgs-new.wpsoffice-cn
       fastfetch
       steam
       podman-compose
@@ -331,6 +339,7 @@ in
     tunMode.enable = true;  #source value is true	 #comment by ylagr
   };
   programs.clash-verge = {
+    package = pkgs-new.clash-verge-rev;
   	enable = true;
 	  autoStart = true;
 	  serviceMode = true;

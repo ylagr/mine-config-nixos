@@ -13,21 +13,76 @@ let
     exec ${originalQQ}/bin/qq "$@"
   '';
   librime-lua5_3_compat = pkgs.librime-lua.override {
+    # lua = lua5_3_as_5_2_compat;
     lua = pkgs.lua5_3_compat;
   };
-  # librime-with-lua5_3_compat = pkgs.librime.overrideAttrs (oldAttrs: {
-    # buildInputs = (oldAttrs.buildInputs or []) ++ [ librime-lua5_3_compat ];
-  # });
+  # my-lua.nix
+
+lua5_3_as_5_2_compat = pkgs.stdenvNoCC.mkDerivation {
+  pname = "lua";          # ← 包的基础名（推荐用 pname + version）
+  version = "5.2.c"; # ← 版本号
+
+  # 或用 name = "lua-5.2-compat";  （旧风格，等价）
+
+  src = pkgs.lua5_3_compat.src;
+  nativeBuildInputs = [ pkgs.patchelf ];
+
+  installPhase = ''
+    mkdir -p $out/lib
+    # cp -r ${pkgs.lua53Packages.lua}/lib/liblua*.so* $out/lib/
+    cp -r ${pkgs.lua5_3_compat}/lib/liblua*.so* $out/lib/
+    cd $out/lib
+    
+    # 重命名 + patchelf（同前，略）
+    # cp liblua.5.3.so liblua.so.5.2
+    cp liblua.so.5.3 liblua.so.5.2
+    chmod +w "liblua.so.5.2"
+    # patchelf --set-soname liblua.so.5.2 liblua.so.5.2
+    ln -sf liblua.so.5.2 liblua.so
+    ln -sf liblua.so.5.2 liblua5.2.so
+  '';
+
+  meta = with pkgs.stdenvNoCC.lib; {
+    description = "Lua 5.2 ABI-compatible layer using Lua 5.3";
+    license = lib.licenses.mit;
+  };
+};
   librime-with-lua5_3_compat = pkgs.librime.override {
     librime-lua = librime-lua5_3_compat;
   };
   fcitx5-rime-lua5_3_compat = pkgs.replaceDependencies {
     drv = pkgs.fcitx5-rime;
     replacements = [
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.callPackage pkgs.lua5_3_compat {};})
-      ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
+      ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_3_compat;})
+      # ({oldDependency = pkgs.librime-lua; newDependency = librime-lua5_3_compat;})
+      
     ];
   };
+  # librime-lua5_3_compat = pkgs.replaceDependencies {
+    # drv = pkgs.librime-lua;
+    # replacements = [
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
+    # ];
+  # };
+  librime-with-lua5_3_compat-bak = pkgs.replaceDependencies {
+    drv = pkgs.librime;
+    replacements = [
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua52Packages.lua;})
+      ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2_compat;})
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_2_compat;})
+    ];
+  };
+  # fcitx5-rime-lua5_3_compat_bak = pkgs.replaceDependencies {
+    # drv = pkgs.fcitx5-rime;
+    # replacements = [
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.callPackage pkgs.lua5_3_compat {};})
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
+      # ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_3_compat;})
+      # ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2;})
+      # ({oldDependency = pkgs.librime-lua; newDependency = librime-lua5_3_compat;})
+      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
+    # ];
+  # };
 in
 {
   imports =
@@ -110,6 +165,7 @@ in
       rime-data
       # (fcitx5-rime.override{librime=librime-with-lua5_3_compat;})
       fcitx5-rime-lua5_3_compat
+      # fcitx5-rime
       fcitx5-gtk
     ];
   };
@@ -182,6 +238,8 @@ in
     e2fsprogs
     freetype
     fontconfig    # 如果用 GUI 或 AWT/Swing，可能还需要更多
+    # lua
+    # lua5_3_compat
   ];
 
   programs.gamescope = {
@@ -270,6 +328,9 @@ in
   #    rime
   #  ]);
   #};
+  # environment.sessionVariables = {
+    # EDITOR = "emacs";
+  # };
   virtualisation.containers.enable = true;
   virtualisation.podman = {
     enable = true;
@@ -291,6 +352,7 @@ in
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    xdg-utils
     # 光盘刻录
     kdePackages.k3b
     cdrtools

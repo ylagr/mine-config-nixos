@@ -12,66 +12,68 @@ let
     rm -rf ~/.config/QQ/versions
     exec ${originalQQ}/bin/qq "$@"
   '';
-  librime-lua5_3_compat = pkgs.librime-lua.override {
-    # lua = lua5_3_as_5_2_compat;
-    lua = pkgs.lua5_3_compat;
-  };
-  # my-lua.nix
+#   librime-lua5_3_compat = pkgs.librime-lua.override {
+#     # lua = lua5_3_as_5_2_compat;
+#     lua = pkgs.lua5_3_compat;
+#   };
+#   # my-lua.nix
 
-lua5_3_as_5_2_compat = pkgs.stdenvNoCC.mkDerivation {
-  pname = "lua";          # ← 包的基础名（推荐用 pname + version）
-  version = "5.2.c"; # ← 版本号
+# lua5_3_as_5_2_compat = pkgs.stdenvNoCC.mkDerivation {
+#   pname = "lua";          # ← 包的基础名（推荐用 pname + version）
+#   version = "5.2.c"; # ← 版本号
 
-  # 或用 name = "lua-5.2-compat";  （旧风格，等价）
+#   # 或用 name = "lua-5.2-compat";  （旧风格，等价）
 
-  src = pkgs.lua5_3_compat.src;
-  nativeBuildInputs = [ pkgs.patchelf ];
+#   src = pkgs.lua5_3_compat.src;
+#   nativeBuildInputs = [ pkgs.patchelf ];
 
-  installPhase = ''
-    mkdir -p $out/lib
-    # cp -r ${pkgs.lua53Packages.lua}/lib/liblua*.so* $out/lib/
-    cp -r ${pkgs.lua5_3_compat}/lib/liblua*.so* $out/lib/
-    cd $out/lib
-    
-    # 重命名 + patchelf（同前，略）
-    # cp liblua.5.3.so liblua.so.5.2
-    cp liblua.so.5.3 liblua.so.5.2
-    chmod +w "liblua.so.5.2"
-    # patchelf --set-soname liblua.so.5.2 liblua.so.5.2
-    ln -sf liblua.so.5.2 liblua.so
-    ln -sf liblua.so.5.2 liblua5.2.so
-  '';
+#   installPhase = ''
+#     mkdir -p $out/lib
+#     # cp -r ${pkgs.lua53Packages.lua}/lib/liblua*.so* $out/lib/
+#     # cp -r ${pkgs.lua5_3_compat}/lib/liblua*.so* $out/lib/
+#     # cd $out/lib
+#     # cp -r ${pkgs.lua53Packages.lua}/* $out/
+#     cp -r ${pkgs.lua5_4_compat}/* $out/
+#     cd $out/lib
+#     # 重命名 + patchelf（同前，略）
+#     cp liblua.so.5.4 liblua.so.5.2.4
+#     ln -sf liblua.so.5.2.4 liblua.so
+#     ln -sf liblua.so.5.2.4 liblua.so.5.2
+#     # cd $out/
+#     chmod 777 "liblua.so.5.2"
+#     patchelf --set-soname liblua.so.5.2 liblua.so.5.2
+#   '';
 
-  meta = with pkgs.stdenvNoCC.lib; {
-    description = "Lua 5.2 ABI-compatible layer using Lua 5.3";
-    license = lib.licenses.mit;
-  };
-};
-  librime-with-lua5_3_compat = pkgs.librime.override {
-    librime-lua = librime-lua5_3_compat;
-  };
-  fcitx5-rime-lua5_3_compat = pkgs.replaceDependencies {
-    drv = pkgs.fcitx5-rime;
-    replacements = [
-      ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_3_compat;})
-      # ({oldDependency = pkgs.librime-lua; newDependency = librime-lua5_3_compat;})
-      
-    ];
-  };
+#   meta = with pkgs.stdenvNoCC.lib; {
+#     description = "Lua 5.2 ABI-compatible layer using Lua 5.3";
+#     license = lib.licenses.mit;
+#   };
+# };
+#   librime-with-lua5_3_compat = pkgs.librime.override {
+#     librime-lua = librime-lua5_3_compat;
+#   };
+#   fcitx5-rime-lua5_3_compat = pkgs.replaceDependencies {
+#     drv = pkgs.fcitx5-rime;
+#     replacements = [
+#       # ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_3_compat;})
+#       # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
+#       ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2_compat;})
+#     ];
+#   };
   # librime-lua5_3_compat = pkgs.replaceDependencies {
     # drv = pkgs.librime-lua;
     # replacements = [
       # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
     # ];
   # };
-  librime-with-lua5_3_compat-bak = pkgs.replaceDependencies {
-    drv = pkgs.librime;
-    replacements = [
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua52Packages.lua;})
-      ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2_compat;})
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_2_compat;})
-    ];
-  };
+  # librime-with-lua5_3_compat-bak = pkgs.replaceDependencies {
+  #   drv = pkgs.librime;
+  #   replacements = [
+  #     # ({oldDependency = pkgs.lua; newDependency = pkgs.lua52Packages.lua;})
+  #     ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2_compat;})
+  #     # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_2_compat;})
+  #   ];
+  # };
   # fcitx5-rime-lua5_3_compat_bak = pkgs.replaceDependencies {
     # drv = pkgs.fcitx5-rime;
     # replacements = [
@@ -83,6 +85,19 @@ lua5_3_as_5_2_compat = pkgs.stdenvNoCC.mkDerivation {
       # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
     # ];
   # };
+  
+  librime-lua-with-lua5_4_compat = pkgs.librime-lua.override {
+    lua = pkgs.lua5_4_compat;
+  };
+  librime-with-lua5_4_compat = pkgs.librime.override {
+    librime-lua =  librime-lua-with-lua5_4_compat;
+  };
+  fcitx5-rime-with-lua5_4_compat = pkgs.replaceDependencies{
+    drv = pkgs.fcitx5-rime;
+    replacements = [
+      ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_4_compat;})
+    ];
+  };
 in
 {
   imports =
@@ -164,7 +179,8 @@ in
     fcitx5.addons = with pkgs; [
       rime-data
       # (fcitx5-rime.override{librime=librime-with-lua5_3_compat;})
-      fcitx5-rime-lua5_3_compat
+      fcitx5-rime-with-lua5_4_compat
+      # fcitx5-rime-lua5_3_compat
       # fcitx5-rime
       fcitx5-gtk
     ];

@@ -1,8 +1,10 @@
+sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
+
 https://yuedy.xn--xpxs85a.xn--io0a7i/link/hywAPErkjrfbotjH?clash=1
 
 
 
-sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
+
 
 
 xorrisofs -R -J -o session1.iso /home/suiwp/code/java/yk/dr/build/prod/0.0.1/dr-server/dr-server-0.0.1.jar

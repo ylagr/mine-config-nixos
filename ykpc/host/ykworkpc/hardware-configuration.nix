@@ -10,8 +10,7 @@
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "vmd" "nvme" "usbhid" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" "pktcdvd" ];
-  boot.extraModulePackages = [ ];
+
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/c11760c8-e368-47b6-8eb5-ef3ce0b0b4cf";

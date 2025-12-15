@@ -106,6 +106,17 @@ in
     ];
 
   # Bootloader.
+  boot.kernelModules = [
+    "kvm-intel"
+    "pktcdvd"
+    "kvmfr"
+  ];
+  boot.extraModulePackages = [
+     config.boot.kernelPackages.kvmfr
+  ];
+  boot.extraModprobeConfig= ''
+     options kvmfr static_size_mb=32
+  '';
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.windows = {
@@ -152,7 +163,13 @@ in
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
-  networking.networkmanager.enable = true;
+  # networking.networkmanager.enable = true;
+  networking.networkmanager = {
+    enable = true;
+    plugins = with pkgs; [
+      networkmanager-openvpn
+    ];
+  };
 
   # Set your time zone.
   time.timeZone = "Asia/Shanghai";
@@ -199,6 +216,9 @@ in
   services.desktopManager.gnome.enable = true;
   # 貌似是给托盘图标提供服务
   services.udev.packages = with pkgs; [ gnome-settings-daemon ];
+  services.udev.extraRules = ''
+    SUBSYSTEM=="kvmfr", OWNER="suiwp", GROUP="kvm", MODE="0660"
+  '';
   
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -237,6 +257,14 @@ in
   programs.virt-manager.enable = true;
   
   virtualisation.libvirtd.enable = true;
+  virtualisation.libvirtd.qemu.verbatimConfig=''
+        cgroup_device_acl = [
+        "/dev/null", "/dev/full", "/dev/zero",
+        "/dev/random", "/dev/urandom",
+        "/dev/ptmx", "/dev/kvm",
+        "/dev/kvmfr0"
+    ]
+  '';
   # 启用 ARM 转译（Houdini）  
   #virtualisation.waydroid.enableHoudini = true;
   programs.nix-ld.enable = true;
@@ -268,9 +296,12 @@ in
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
+      ffmpeg
+      openvpn
+      # networkmanager-openvpn
       # gamescope
       wl-clipboard # 解决剪贴板问题
-      gpaste
+      
       multimarkdown
       nix-tree
       chezmoi
@@ -302,6 +333,8 @@ in
       android-tools
       qqWrapper
       emacs-pgtk
+      # emacs-nox
+      # emacs
       podman-tui
       # gifgen    #这个是转换的工具，不是实时录制
       snipaste
@@ -363,6 +396,9 @@ in
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  programs.k3b = {
+    enable = true;
+  };
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -371,11 +407,11 @@ in
     xdg-utils
     inetutils
     # 光盘刻录
-    kdePackages.k3b
-    cdrtools
-    xorriso
-    dvdplusrwtools
-    udftools
+    # kdePackages.k3b
+    # cdrtools
+    # xorriso
+    # dvdplusrwtools
+    # udftools
     # 光盘刻录end
     uv
     opencc
@@ -389,27 +425,37 @@ in
     tree
     # waybar
     fuzzel
-    #不兼容#gnomeExtensions.workspace-buttons-with-app-icons
-    gnomeExtensions.worksets
-    gnomeExtensions.window-title-is-back
-    #不兼容#gnomeExtensions.window-list-in-panel
-    gnomeExtensions.workspaces-indicator-by-open-apps
-    #和window-list重复#gnomeExtensions.workspace-indicator
-    gnomeExtensions.window-list
-    gnomeExtensions.kimpanel
-    gnomeExtensions.appindicator
-    gnomeExtensions.indicator
-    gnomeExtensions.fuzzy-app-search
     gnome-extension-manager
     subversion
     home-manager
     looking-glass-client
+    gpaste
   ] ++ (with gnomeExtensions; [
     dash-to-dock
-    night-theme-switcher
+    # night-theme-switcher
     clipboard-history
     # gnome-shell-extension-desktop-icons
     gsconnect
+    window-list
+    flickernaut
+    edit-desktop-files
+    desktop-icons-ng-ding
+    desktop-lyric
+    dash-to-dock
+    dash-in-panel
+    add-to-desktop
+    fuzzy-app-search
+    appindicator
+    indicator
+    kimpanel
+    # workspaces-indicator-by-open-apps
+    window-title-is-back
+    network-stats
+    # worksets
+    #不兼容#gnomeExtensions.workspace-buttons-with-app-icons
+    #不兼容#gnomeExtensions.window-list-in-panel
+    #和window-list重复#gnomeExtensions.workspace-indicator
+
   ]);
   
   # Nekoray VPN
@@ -453,7 +499,7 @@ in
     # };
     defaultFonts = {
       sansSerif = [ "WenQuanYi Micro Hei"];
-      monospace = [ "ubuntu mono" "unifont" "WenQuanYi Micro Hei" ];
+      monospace = [ "Fantasque Sans Mono"  "ubuntu mono" "unifont" "WenQuanYi Micro Hei" ];
       serif = ["WenQuanYi Micro Hei"];
     };
   };

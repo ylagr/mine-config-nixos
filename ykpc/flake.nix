@@ -14,25 +14,35 @@
     };
     nixpkgs-new = {
       url =  "github:nixos/nixpkgs/nixos-unstable";
-     
+      
+    };
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs-new";
+      inputs.nixpkgs-stable.follows = "nixpkgs-new";
     };
     # ➕ 添加 NUR
     # nur = {
-      # url =  "github:nix-community/NUR";
-      # inputs.nixpkgs.follows = "nixpkgs";
+    # url =  "github:nix-community/NUR";
+    # inputs.nixpkgs.follows = "nixpkgs";
     # };
   }; 
 
-  
-  outputs = inputs@{ self, nixpkgs, ... }:
+
+  outputs = inputs@{ self, nixpkgs, emacs-overlay,  ... }:
     let
-      # system = "x86_64-linux";
+      system = "x86_64-linux";
+      pkgs-new = import inputs.nixpkgs-new {
+        config.allowUnfree = true;
+        inherit system;
+        overlays = [emacs-overlay.overlays.emacs];
+      };
       # nixpkgs-new-unfree = import inputs.nixpkgs-new {
-        # config.allowUnfree = true;
-        # inherit system;
-        # overlay = [
-          # inputs.nur.overlay
-        # ];
+      # config.allowUnfree = true;
+      # inherit system;
+      # overlays = [
+      # inputs.nur.overlay
+      # ];
       # };
     in {
       nixosConfigurations = {
@@ -41,16 +51,19 @@
         in nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit system inputs;
-            pkgs-new = import inputs.nixpkgs-new {
-              config.allowUnfree = true;
-              inherit system;
-              overlay = [];
-            };
+            inherit system inputs pkgs-new;
+            
+            # pkgs-new = import inputs.nixpkgs-new {
+            #   config.allowUnfree = true;
+            #   inherit system;
+            #   overlays = [emacs-overlay.overlays.emacs];
+            # };
           };
           modules = [
             ./host/ykworkpc/configuration.nix
             ./noctalia.nix
+            # ({ config, lib, ... }: {   _module.args.pkgs-new = pkgs-new;})
+
           ];
         };
       };
@@ -64,7 +77,7 @@
       #   };
       #   modules = [
       #     ./host/ykworkpc/configuration.nix
-          
+      
       #     ./noctalia.nix
       #     # ./chinese.nix
       #   ];

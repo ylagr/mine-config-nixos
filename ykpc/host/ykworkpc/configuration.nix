@@ -296,6 +296,8 @@ in
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
+      scrcpy
+      python3
       ffmpeg
       openvpn
       # networkmanager-openvpn
@@ -332,7 +334,8 @@ in
       waydroid-helper
       android-tools
       qqWrapper
-      emacs-pgtk
+      # pkgs-new.emacs-pgtk
+      # pkgs-new.emacs-git
       # emacs-nox
       # emacs
       podman-tui
@@ -360,7 +363,9 @@ in
       # native wayland support (unstable)
       #wineWowPackages.waylandFull
       samba
-    ];
+    ] ++ ( with pkgs-new; [
+      pkgs-new.emacs-git
+    ]);
   };
   
   environment.variables = {    

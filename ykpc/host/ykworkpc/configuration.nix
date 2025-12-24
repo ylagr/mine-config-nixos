@@ -290,12 +290,14 @@ in
     enable = true;
     capSysNice = true;
   };
+  services.flatpak.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.suiwp = {
     isNormalUser = true;
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
+      gnome-software
       scrcpy
       python3
       ffmpeg

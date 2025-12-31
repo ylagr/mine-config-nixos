@@ -1,4 +1,4 @@
-# Edit this configuration file to define what should be installed on
+;133u;133u# Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
@@ -297,7 +297,6 @@ in
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
-      nautilus-python
       gnome-software
       scrcpy
       python3
@@ -492,7 +491,7 @@ in
     # babelstone-han
     nerd-fonts.symbols-only
     unifont
-    # windows-fonts
+    windows-fonts
   ];
   fonts.fontconfig = {
     enable = true;

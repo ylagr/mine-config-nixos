@@ -21,6 +21,11 @@
       inputs.nixpkgs.follows = "nixpkgs-new";
       inputs.nixpkgs-stable.follows = "nixpkgs-new";
     };
+    chinese-fonts-overlay = {
+      url = "github:brsvh/chinese-fonts-overlay/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
     # ➕ 添加 NUR
     # nur = {
     # url =  "github:nix-community/NUR";
@@ -29,7 +34,7 @@
   }; 
 
 
-  outputs = inputs@{ self, nixpkgs, emacs-overlay,  ... }:
+  outputs = inputs@{ self, nixpkgs, emacs-overlay, chinese-fonts-overlay, nixpkgs-new,  ... }:
     let
       system = "x86_64-linux";
       pkgs-new = import inputs.nixpkgs-new {
@@ -37,6 +42,12 @@
         inherit system;
         overlays = [emacs-overlay.overlays.emacs];
       };
+      pkgs = import inputs.nixpkgs {
+        config.allowUnfree = true;
+        inherit system;
+        overlays = [chinese-fonts-overlay.overlays.default];
+      };
+      # inputs.nixpkgs.overlays = ( inputs.nixpkgs.overlays or [] ) ++ ([inputs.chinese-fonts-overlay.overlays.default]);
       # nixpkgs-new-unfree = import inputs.nixpkgs-new {
       # config.allowUnfree = true;
       # inherit system;
@@ -51,7 +62,7 @@
         in nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit system inputs pkgs-new;
+            inherit system inputs pkgs-new pkgs;
             
             # pkgs-new = import inputs.nixpkgs-new {
             #   config.allowUnfree = true;

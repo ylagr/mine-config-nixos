@@ -1,5 +1,26 @@
 {
   "nodes": {
+    "chinese-fonts-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1763191926,
+        "narHash": "sha256-I71+uQOV9pz8Twf+sGuKvy9K3ldpmYY6wRFGrRMizlg=",
+        "owner": "brsvh",
+        "repo": "chinese-fonts-overlay",
+        "rev": "18c78ed52845347b8af58f836b568472bed1de62",
+        "type": "github"
+      },
+      "original": {
+        "owner": "brsvh",
+        "ref": "main",
+        "repo": "chinese-fonts-overlay",
+        "type": "github"
+      }
+    },
     "emacs-overlay": {
       "inputs": {
         "nixpkgs": [
@@ -101,6 +122,7 @@
     },
     "root": {
       "inputs": {
+        "chinese-fonts-overlay": "chinese-fonts-overlay",
         "emacs-overlay": "emacs-overlay",
         "nixpkgs": "nixpkgs",
         "nixpkgs-new": "nixpkgs-new",

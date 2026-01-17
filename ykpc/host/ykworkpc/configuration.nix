@@ -200,6 +200,7 @@ in
       # fcitx5-rime-lua5_3_compat
       # fcitx5-rime
       fcitx5-gtk
+      kdePackages.fcitx5-qt
     ];
   };
   
@@ -252,7 +253,9 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
-  virtualisation.waydroid.enable = true;
+  #   virtualisation.waydroid.enable = true;
+    # 启用 ARM 转译（Houdini）  
+  #virtualisation.waydroid.enableHoudini = true;
   # enable kvm
   programs.virt-manager.enable = true;
   
@@ -265,8 +268,7 @@ in
         "/dev/kvmfr0"
     ]
   '';
-  # 启用 ARM 转译（Houdini）  
-  #virtualisation.waydroid.enableHoudini = true;
+
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [
     # 基础 C 库
@@ -297,6 +299,7 @@ in
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
+      bitwarden
       nautilus-python
       gnome-software
       scrcpy
@@ -312,7 +315,7 @@ in
       chezmoi
       logseq
       kitty
-      wemeet
+##      wemeet
       virtiofsd # 解决kvm虚拟机挂载目录问题
       lazarus
       siyuan
@@ -328,13 +331,13 @@ in
       pkgs-new.wpsoffice-cn
       fastfetch
       steam
-      podman-compose
+      
       wechat
       appimage-run
       gopeed
       kdePackages.kdeconnect-kde
-      waydroid
-      waydroid-helper
+#      waydroid
+#      waydroid-helper
       android-tools
       qqWrapper
       # pkgs-new.emacs-pgtk
@@ -346,8 +349,9 @@ in
       snipaste
       (flameshot.override { enableWlrSupport = true; })
       # support both 32-bit and 64-bit applications
-      wineWowPackages.stable
+      # wineWowPackages.stable
       wineWowPackages.waylandFull
+      bottles
       # support 32-bit only
       #wine
 
@@ -370,12 +374,13 @@ in
       pkgs-new.emacs-git
     ]);
   };
-  
-  environment.variables = {    
+  # i18n.inputMethod.fcitx5.waylandFrontend = true;
+  environment.variables = {
+    NIXOS_OZONE_WL=1;
 	  QT_IM_MODULE = "fcitx";
     # 通常，为了确保 fcitx 正常工作，建议同时设置以下变量：  
 	  GTK_IM_MODULE = "fcitx";
-	  XMODIFIERS = "@im=fcitx";  
+	  #XMODIFIERS = "@im=fcitx";  
   };
   #programs.emacs = {
   #  enable = false;
@@ -389,6 +394,7 @@ in
     # EDITOR = "emacs";
   # };
   virtualisation.containers.enable = true;
+  virtualisation.oci-containers.backend = "podman";
   virtualisation.podman = {
     enable = true;
     dockerCompat = true;
@@ -396,6 +402,9 @@ in
   };
   # Install firefox.
   programs.firefox.enable = true;
+  programs.labwc = {
+    enable = true;
+  };
   qt = {
     enable = true;	#source value is true	#comment by ylagr
     style = "kvantum";
@@ -407,11 +416,33 @@ in
   programs.k3b = {
     enable = true;
   };
+  # xdg.enable = true;
+  
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    pkgs-new.xwayland-satellite
+    waybar
+    hyprlock
+    # swaylock
+    fuzzel
+    # rofi
+    wdisplays
+    swaynotificationcenter
+    networkmanagerapplet
+    sfwbar
+    blueman
+    redshift # x11 色温调节
+    wlr-randr
+    copyq
+    gammastep #wayland色温调节
+    
+    
+    distrobox
+    podman-compose
+    kupfer
     xdg-utils
     inetutils
     # 光盘刻录
@@ -431,8 +462,6 @@ in
     wget
     bash-completion
     tree
-    # waybar
-    fuzzel
     gnome-extension-manager
     subversion
     home-manager
@@ -447,7 +476,7 @@ in
     window-list
     flickernaut
     edit-desktop-files
-    desktop-icons-ng-ding
+    # desktop-icons-ng-ding
     desktop-lyric
     dash-to-dock
     dash-in-panel
@@ -477,7 +506,10 @@ in
 	  autoStart = true;
 	  serviceMode = true;
   }; 
-  programs.niri.enable = true;
+  programs.niri = {
+    enable = true;
+    package = pkgs-new.niri;
+  };
   fonts.packages = with pkgs; [
     font-awesome
     adwaita-fonts

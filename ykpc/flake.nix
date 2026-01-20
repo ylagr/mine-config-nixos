@@ -3,6 +3,7 @@
   description = "NixOS flake-configuration with Noctalia";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-sys.url = "github:nixos/nixpkgs/nixos-unstable";
     quickshell = {
       url = "github:outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -34,7 +35,7 @@
   }; 
 
 
-  outputs = inputs@{ self, nixpkgs, emacs-overlay, chinese-fonts-overlay, nixpkgs-new,  ... }:
+  outputs = inputs@{ self, nixpkgs,nixpkgs-sys, emacs-overlay, chinese-fonts-overlay, nixpkgs-new,  ... }:
     let
       system = "x86_64-linux";
       pkgs-new = import inputs.nixpkgs-new {
@@ -42,11 +43,13 @@
         inherit system;
         overlays = [emacs-overlay.overlays.emacs];
       };
-      pkgs = import inputs.nixpkgs {
+      pkgs-sys = import inputs.nixpkgs-sys {
         config.allowUnfree = true;
         inherit system;
         overlays = [chinese-fonts-overlay.overlays.default];
       };
+
+      
       # inputs.nixpkgs.overlays = ( inputs.nixpkgs.overlays or [] ) ++ ([inputs.chinese-fonts-overlay.overlays.default]);
       # nixpkgs-new-unfree = import inputs.nixpkgs-new {
       # config.allowUnfree = true;
@@ -56,13 +59,15 @@
       # ];
       # };
     in {
+      packages.${system}.sys = pkgs-sys;
+      legacyPackages.${system}.sys = pkgs-sys;
       nixosConfigurations = {
         nixos = let
           system = "x86_64-linux";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            inherit system inputs pkgs-new pkgs;
+            inherit system inputs pkgs-new pkgs-sys;
             
             # pkgs-new = import inputs.nixpkgs-new {
             #   config.allowUnfree = true;

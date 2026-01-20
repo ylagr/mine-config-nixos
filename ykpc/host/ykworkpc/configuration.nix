@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, pkgs-new, nixpkgs-new, ... }:
+{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, ... }:
 let
   originalQQ = pkgs.qq;
   qqWrapper = pkgs.writeShellScriptBin "qq" ''
@@ -203,8 +203,18 @@ in
       kdePackages.fcitx5-qt
     ];
   };
-  
-
+  environment.etc."xdg/gtk-2.0/gtkrc".text = ''
+    gtk-im-module="fcitx"
+  '';
+  environment.etc."xdg/gtk-3.0/settings.ini".text = ''
+    [Settings]
+    gtk-im-module=fcitx
+  '';
+  environment.etc."xdg/gtk-4.0/settings.ini".text = ''
+    [Settings]
+    gtk-im-module=fcitx
+  '';
+    
   documentation = {
     dev.enable = true;
   };
@@ -213,8 +223,15 @@ in
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.displayManager.gdm.enable = true;
+  #services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
+
+  services.displayManager.ly.enable = true;
+  services.displayManager.ly.x11Support = false;
+  services.displayManager.ly.settings = {
+    animation = "matrix";
+    session_log = ".local/state/ly-session.log";
+  };
   # 貌似是给托盘图标提供服务
   services.udev.packages = with pkgs; [ gnome-settings-daemon ];
   services.udev.extraRules = ''
@@ -252,7 +269,7 @@ in
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+  services.xserver.libinput.enable = true;
   #   virtualisation.waydroid.enable = true;
     # 启用 ARM 转译（Houdini）  
   #virtualisation.waydroid.enableHoudini = true;
@@ -379,9 +396,10 @@ in
     NIXOS_OZONE_WL=1;
 	  QT_IM_MODULE = "fcitx";
     # 通常，为了确保 fcitx 正常工作，建议同时设置以下变量：  
-	  GTK_IM_MODULE = "fcitx";
+	  # GTK_IM_MODULE = "fcitx";
 	  #XMODIFIERS = "@im=fcitx";  
   };
+  
   #programs.emacs = {
   #  enable = false;
   #  package = pkgs.emacs-igc-pgtk.pkgs.withPackages (epkgs: with epkgs; [ 
@@ -402,8 +420,12 @@ in
   };
   # Install firefox.
   programs.firefox.enable = true;
+  programs.wayfire = {
+    enable = true;
+  };
   programs.labwc = {
     enable = true;
+    package = pkgs-new.labwc;
   };
   qt = {
     enable = true;	#source value is true	#comment by ylagr
@@ -417,7 +439,7 @@ in
     enable = true;
   };
   # xdg.enable = true;
-  
+  services.blueman.enable = true;
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -427,22 +449,28 @@ in
     waybar
     hyprlock
     # swaylock
-    fuzzel
-    # rofi
+    # fuzzel
+    rofi
+    # wofi
     wdisplays
     swaynotificationcenter
     networkmanagerapplet
-    sfwbar
+    # sfwbar
     blueman
-    redshift # x11 色温调节
+    # redshift # x11 色温调节
     wlr-randr
+    kanshi
+    # labwc-tweaks
+
+    # emptty
+    
     copyq
     gammastep #wayland色温调节
     
     
     distrobox
     podman-compose
-    kupfer
+    # kupfer
     xdg-utils
     inetutils
     # 光盘刻录

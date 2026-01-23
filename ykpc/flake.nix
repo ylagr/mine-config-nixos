@@ -2,6 +2,7 @@
 {
   description = "NixOS flake-configuration with Noctalia";
   inputs = {
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-sys.url = "github:nixos/nixpkgs/nixos-unstable";
     quickshell = {
@@ -59,7 +60,7 @@
       # ];
       # };
     in {
-      packages.${system}.sys = pkgs-sys;
+      # packages.${system}.sys = pkgs-sys;
       legacyPackages.${system}.sys = pkgs-sys;
       nixosConfigurations = {
         nixos = let

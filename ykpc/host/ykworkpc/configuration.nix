@@ -122,7 +122,7 @@ in
   boot.loader.systemd-boot.windows = {
     "nvme0n1p3" = {
       title = "window";
-      efiDeviceHandle = "BLK3";
+      efiDeviceHandle = "BLK1";
     };
 
   };
@@ -222,6 +222,8 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
+  # 貌似是给托盘图标提供服务
+  services.udev.packages = with pkgs; [ gnome-settings-daemon ];
   # Enable the GNOME Desktop Environment.
   #services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
@@ -232,8 +234,7 @@ in
     animation = "matrix";
     session_log = ".local/state/ly-session.log";
   };
-  # 貌似是给托盘图标提供服务
-  services.udev.packages = with pkgs; [ gnome-settings-daemon ];
+
   services.udev.extraRules = ''
     SUBSYSTEM=="kvmfr", OWNER="suiwp", GROUP="kvm", MODE="0660"
   '';
@@ -269,7 +270,8 @@ in
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
+  # services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
   #   virtualisation.waydroid.enable = true;
     # 启用 ARM 转译（Houdini）  
   #virtualisation.waydroid.enableHoudini = true;
@@ -368,7 +370,7 @@ in
       # support both 32-bit and 64-bit applications
       # wineWowPackages.stable
       wineWowPackages.waylandFull
-      bottles
+      # bottles
       # support 32-bit only
       #wine
 
@@ -420,9 +422,7 @@ in
   };
   # Install firefox.
   programs.firefox.enable = true;
-  programs.wayfire = {
-    enable = true;
-  };
+
   programs.labwc = {
     enable = true;
     package = pkgs-new.labwc;
@@ -445,12 +445,15 @@ in
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    lxqt.lxqt-policykit
     pkgs-new.xwayland-satellite
     waybar
     hyprlock
     # swaylock
     # fuzzel
     rofi
+    wayidle
+    swayidle
     # wofi
     wdisplays
     swaynotificationcenter

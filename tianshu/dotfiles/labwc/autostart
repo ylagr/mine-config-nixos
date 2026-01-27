@@ -1,0 +1,4 @@
+fcitx5 -d
+waybar &
+kanshi &
+swww-daemon &

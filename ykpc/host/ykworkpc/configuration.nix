@@ -10,82 +10,9 @@ let
     export GTK_IM_MODULE=fcitx
     export XMODIFIERS='@im=fcitx'
     rm -rf ~/.config/QQ/versions
-    exec ${originalQQ}/bin/qq "$@"
+    exec ${originalQQ}/bin/qq --disable-gpu "$@" 
   '';
-#   librime-lua5_3_compat = pkgs.librime-lua.override {
-#     # lua = lua5_3_as_5_2_compat;
-#     lua = pkgs.lua5_3_compat;
-#   };
-#   # my-lua.nix
 
-# lua5_3_as_5_2_compat = pkgs.stdenvNoCC.mkDerivation {
-#   pname = "lua";          # ← 包的基础名（推荐用 pname + version）
-#   version = "5.2.c"; # ← 版本号
-
-#   # 或用 name = "lua-5.2-compat";  （旧风格，等价）
-
-#   src = pkgs.lua5_3_compat.src;
-#   nativeBuildInputs = [ pkgs.patchelf ];
-
-#   installPhase = ''
-#     mkdir -p $out/lib
-#     # cp -r ${pkgs.lua53Packages.lua}/lib/liblua*.so* $out/lib/
-#     # cp -r ${pkgs.lua5_3_compat}/lib/liblua*.so* $out/lib/
-#     # cd $out/lib
-#     # cp -r ${pkgs.lua53Packages.lua}/* $out/
-#     cp -r ${pkgs.lua5_4_compat}/* $out/
-#     cd $out/lib
-#     # 重命名 + patchelf（同前，略）
-#     cp liblua.so.5.4 liblua.so.5.2.4
-#     ln -sf liblua.so.5.2.4 liblua.so
-#     ln -sf liblua.so.5.2.4 liblua.so.5.2
-#     # cd $out/
-#     chmod 777 "liblua.so.5.2"
-#     patchelf --set-soname liblua.so.5.2 liblua.so.5.2
-#   '';
-
-#   meta = with pkgs.stdenvNoCC.lib; {
-#     description = "Lua 5.2 ABI-compatible layer using Lua 5.3";
-#     license = lib.licenses.mit;
-#   };
-# };
-#   librime-with-lua5_3_compat = pkgs.librime.override {
-#     librime-lua = librime-lua5_3_compat;
-#   };
-#   fcitx5-rime-lua5_3_compat = pkgs.replaceDependencies {
-#     drv = pkgs.fcitx5-rime;
-#     replacements = [
-#       # ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_3_compat;})
-#       # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
-#       ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2_compat;})
-#     ];
-#   };
-  # librime-lua5_3_compat = pkgs.replaceDependencies {
-    # drv = pkgs.librime-lua;
-    # replacements = [
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
-    # ];
-  # };
-  # librime-with-lua5_3_compat-bak = pkgs.replaceDependencies {
-  #   drv = pkgs.librime;
-  #   replacements = [
-  #     # ({oldDependency = pkgs.lua; newDependency = pkgs.lua52Packages.lua;})
-  #     ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2_compat;})
-  #     # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_2_compat;})
-  #   ];
-  # };
-  # fcitx5-rime-lua5_3_compat_bak = pkgs.replaceDependencies {
-    # drv = pkgs.fcitx5-rime;
-    # replacements = [
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.callPackage pkgs.lua5_3_compat {};})
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
-      # ({oldDependency = pkgs.librime; newDependency = librime-with-lua5_3_compat;})
-      # ({oldDependency = pkgs.lua; newDependency = lua5_3_as_5_2;})
-      # ({oldDependency = pkgs.librime-lua; newDependency = librime-lua5_3_compat;})
-      # ({oldDependency = pkgs.lua; newDependency = pkgs.lua5_3_compat;})
-    # ];
-  # };
-  
   librime-lua-with-lua5_4_compat = pkgs.librime-lua.override {
     lua = pkgs.lua5_4_compat;
   };
@@ -311,6 +238,8 @@ in
     enable = true;
     capSysNice = true;
   };
+  # 启用 GVfs 服务以支持网络挂载、垃圾桶等功能
+  services.gvfs.enable = true;
   services.flatpak.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.suiwp = {
@@ -318,16 +247,21 @@ in
     description = "suiwp";
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
+      lua
+      librime-with-lua5_4_compat
       bitwarden
       nautilus-python
       gnome-software
       scrcpy
       python3
+      slurp #区域选择工具
+      wf-recorder
+      # kooha                     # 仅支持gnome
       ffmpeg
       openvpn
       # networkmanager-openvpn
       # gamescope
-      wl-clipboard # 解决剪贴板问题
+
       
       multimarkdown
       nix-tree
@@ -369,7 +303,7 @@ in
       (flameshot.override { enableWlrSupport = true; })
       # support both 32-bit and 64-bit applications
       # wineWowPackages.stable
-      wineWowPackages.waylandFull
+      # wineWowPackages.waylandFull
       # bottles
       # support 32-bit only
       #wine
@@ -384,7 +318,7 @@ in
       #wineWowPackages.staging
 
       # winetricks (all versions)
-      winetricks
+      # winetricks
 
       # native wayland support (unstable)
       #wineWowPackages.waylandFull
@@ -445,7 +379,13 @@ in
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    wl-clipboard # 解决剪贴板问题
     lxqt.lxqt-policykit
+    # lxqt.pcmanfm-qt
+    pcmanfm
+    xfce.thunar
+    doublecmd
+    busybox
     pkgs-new.xwayland-satellite
     waybar
     hyprlock
@@ -463,6 +403,8 @@ in
     # redshift # x11 色温调节
     wlr-randr
     kanshi
+    # cliphist # 使用copyq
+    # ydotool # need ydotoold running
     # labwc-tweaks
 
     # emptty

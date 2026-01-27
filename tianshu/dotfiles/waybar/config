@@ -1,0 +1,76 @@
+{
+    "layer": "top",
+    "modules-left": ["sway/scratchpad", "sway/workspaces", "sway/mode"],
+    "modules-center": ["sway/window"],
+    "modules-right": ["bluetooth", "backlight", "pulseaudio", "network", "battery", "clock"],
+    "sway/scratchpad": {
+         "format": "{icon} {count}",
+         "show-empty": false,
+         "format-icons": ["", ""],
+         "tooltip": true,
+         "tooltip-format": "{app}: {title}"
+    },
+    "backlight": {
+         "device": "intel_backlight",
+         "format": "{percent}% {icon}",
+         "format-icons": ["", ""]
+    },
+    "pulseaudio": {
+         "format": "{volume}% {icon}",
+         "format-bluetooth": "{volume}% {icon}",
+         "format-muted": "MUTE ",
+         "format-icons": {
+              "headphones": "",
+              "handsfree": "",
+              "headset": "",
+              "phone": "",
+              "phone-muted": "",
+              "portable": "",
+              "car": "",
+              "default": ["", ""]
+         },
+         "scroll-step": 1,
+         "on-click": "pavucontrol"
+    },
+    "network": {
+         "format": "{ifname}",
+         "format-wifi": "{essid} ({signalStrength}%) ",
+         "format-ethernet": "{ifname} ",
+         "format-disconnected": "", //An empty format will hide the module.
+         "format-disconnected": "",
+         "tooltip-format": "{ifname}",
+         "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
+         "tooltip-format-ethernet": "{ifname} ",
+         "tooltip-format-disconnected": "Disconnected",
+         "max-length": 50
+    },
+    "sway/window": {
+        "max-length": 50
+    },
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+    },
+    "battery": {
+         "interval": 60,
+         "states": {
+              "warning": 30,
+              "critical": 15
+         },
+         "format": "{capacity}% {icon}",
+         "format-icons": ["", "", "", "", ""],
+         "max-length": 25
+    },
+    "clock": {
+        "format-alt": "{:%a, %d. %b  %H:%M}"
+    },
+    "bluetooth": {
+        "format": " {status}",
+        "format-disabled": "", // an empty format will hide the module
+        "format-connected": " {num_connections} connected",
+        "tooltip-format": "{controller_alias}\t{controller_address}",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
+   }
+
+}

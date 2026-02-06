@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, ... }:
+{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, pkgs-stable, username, homedir, ... }:
 let
   originalQQ = pkgs.qq;
   qqWrapper = pkgs.writeShellScriptBin "qq" ''
@@ -67,6 +67,7 @@ in
   #   # ⚠️ 关键！Steam 是 32 位应用
   # };
   # Enable flakes
+  # nix.package = pkgs-sys.nix;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = [ 
     "https://mirrors.ustc.edu.cn/nix-channels/store"
@@ -127,19 +128,22 @@ in
       # fcitx5-rime-lua5_3_compat
       # fcitx5-rime
       fcitx5-gtk
-      kdePackages.fcitx5-qt
+      # kdePackages.fcitx5-qt
     ];
   };
   environment.etc."xdg/gtk-2.0/gtkrc".text = ''
     gtk-im-module="fcitx"
+    gtk-font-name="Sans 12"
   '';
   environment.etc."xdg/gtk-3.0/settings.ini".text = ''
     [Settings]
     gtk-im-module=fcitx
+    gtk-font-name = Sans 12
   '';
   environment.etc."xdg/gtk-4.0/settings.ini".text = ''
     [Settings]
     gtk-im-module=fcitx
+    gtk-font-name = Sans 12
   '';
     
   documentation = {
@@ -150,15 +154,62 @@ in
   services.xserver.enable = true;
 
   # 貌似是给托盘图标提供服务
-  services.udev.packages = with pkgs; [ gnome-settings-daemon ];
+  # services.udev.packages = with pkgs; [ gnome-settings-daemon ];
   # Enable the GNOME Desktop Environment.
   #services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-
+  # services.desktopManager.gnome.enable = true;
+  # 轻量替换gnome配套设施
+  services.gnome.gnome-keyring.enable = true;
+  services.upower.enable = true;
+  programs.dconf.enable = true;
+  security.pam.services.login.enableGnomeKeyring = true;
+  # 启用 GVfs 服务以支持网络挂载、垃圾桶等功能
+  services.gvfs.enable = true;
+  services.udisks2.enable = true; #硬件发现
+  # services.gnome.evolution-data-server.enable = true;
+  programs.evolution.enable = true;
+  xdg = {
+    # enable = true;
+    # 强制让应用通过 Portal 交互
+    
+    portal = {
+      enable = true;
+      xdgOpenUsePortal = false;
+      wlr.enable = true;
+      # lxqt.enable = true;
+      extraPortals = [
+        pkgs.xdg-desktop-portal-gtk
+        # pkgs.lxqt.xdg-desktop-portal-lxqt
+        # pkgs.xdg-desktop-portal-wlr
+      ];
+      # config.common.default = "*";
+      config.common = {
+        default = [ "wlr" "gtk" "*" ];
+        "org.freedesktop.impl.portal.FileChooser" = [ "wlr" "gtk" "*" ];
+        "org.freedesktop.impl.portal.OpenURI" = [ "wlr" "gtk" "*"];
+        # "org.freedesktop.impl.portal.FileChooser" = "lxqt";
+        # "org.freedesktop.impl.portal.OpenURI" = "lxqt";
+      };
+      config.labwc = {
+        "org.freedesktop.impl.portal.FileChooser" = [ "wlr" "gtk" "*" ];
+        "org.freedesktop.impl.portal.OpenURI" = [ "wlr" "gtk" "*"];
+      };
+      
+    };
+      # 确保 PCManFM 被设置为目录类型的默认关联
+    mime.defaultApplications = {
+      # "inode/directory" = "pcmanfm.desktop";
+    };
+  };
+  
+  services.xserver.displayManager.sessionCommands = ''
+    ${pkgs.xfce.thunar}/bin/thunar --daemon &
+    dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroot
+  '';
   services.displayManager.ly.enable = true;
   services.displayManager.ly.x11Support = false;
   services.displayManager.ly.settings = {
-    animation = "matrix";
+    # animation = "matrix";
     session_log = ".local/state/ly-session.log";
   };
 
@@ -169,7 +220,7 @@ in
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "cn";
-    variant = "";
+    # variant = "";
   };
 
   # Enable CUPS to print documents.
@@ -238,8 +289,7 @@ in
     enable = true;
     capSysNice = true;
   };
-  # 启用 GVfs 服务以支持网络挂载、垃圾桶等功能
-  services.gvfs.enable = true;
+
   services.flatpak.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.suiwp = {
@@ -248,10 +298,27 @@ in
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
     packages = with pkgs; [
       lua
+      cmake
+      dconf-editor
+      bottom
+      cachix
+      gcolor3 #颜色选择器
+      ripgrep
+      fzf
+      zoxide
+      ollama
+      universal-ctags
       librime-with-lua5_4_compat
-      bitwarden
-      nautilus-python
+      bitwarden-desktop
+      # nemo-with-extensions
+      # nautilus
+      # file-roller
+      # nautilus-python
+
       gnome-software
+      # gnome-text-editor
+      gnome-calendar
+      
       scrcpy
       python3
       slurp #区域选择工具
@@ -267,7 +334,6 @@ in
       nix-tree
       chezmoi
       logseq
-      kitty
 ##      wemeet
       virtiofsd # 解决kvm虚拟机挂载目录问题
       lazarus
@@ -277,7 +343,8 @@ in
       helix
       brasero
       #  thunderbird
-      jetbrains.idea-ultimate
+      # jetbrains.idea-ultimate
+      pkgs-new.jetbrains.idea
       jdk8
       telegram-desktop
       onedrive
@@ -287,7 +354,7 @@ in
       
       wechat
       appimage-run
-      gopeed
+      pkgs-new.gopeed
       kdePackages.kdeconnect-kde
 #      waydroid
 #      waydroid-helper
@@ -327,15 +394,21 @@ in
       pkgs-new.emacs-git
     ]);
   };
-  # i18n.inputMethod.fcitx5.waylandFrontend = true;
   environment.variables = {
-    NIXOS_OZONE_WL=1;
-	  QT_IM_MODULE = "fcitx";
     # 通常，为了确保 fcitx 正常工作，建议同时设置以下变量：  
 	  # GTK_IM_MODULE = "fcitx";
 	  #XMODIFIERS = "@im=fcitx";  
   };
   
+  environment.sessionVariables = {
+    # EDITOR = "emacs";
+    NIXOS_OZONE_WL=1;
+	  QT_IM_MODULE = "fcitx";
+    GTK_USE_PORTAL = "1";
+    QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
+    # QT_QPA_PLATFORMTHEME = "qt5ct";
+    
+  };
   #programs.emacs = {
   #  enable = false;
   #  package = pkgs.emacs-igc-pgtk.pkgs.withPackages (epkgs: with epkgs; [ 
@@ -344,9 +417,6 @@ in
   #    rime
   #  ]);
   #};
-  # environment.sessionVariables = {
-    # EDITOR = "emacs";
-  # };
   virtualisation.containers.enable = true;
   virtualisation.oci-containers.backend = "podman";
   virtualisation.podman = {
@@ -363,12 +433,22 @@ in
   };
   qt = {
     enable = true;	#source value is true	#comment by ylagr
-    style = "kvantum";
+    # style = "kvantum";
+    # platformTheme = "gnome";
+    # platformTheme = "qt5ct";
+    style = "adwaita";
   };
 
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  # nixpkgs.config.allowUnfree = true;
 
+  programs.thunar = {
+    enable = true;
+    # packages = pkgs-new.thunar;
+    plugins = with pkgs-new; [ thunar-archive-plugin thunar-volman thunar-vcs-plugin];
+  };
+  
+  
   programs.k3b = {
     enable = true;
   };
@@ -379,14 +459,29 @@ in
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    xeyes
+    xdriinfo
+    zip
+    unzip
+    system-config-printer # 打印机 see also https://sspai.com/post/90194 ;; 需要打印机支持，
     wl-clipboard # 解决剪贴板问题
+    # lxmenu-data
     lxqt.lxqt-policykit
+    # lxqt.lxqt-config #用于图标主题
+    # pkgs-new.orage # 功能太少了
+    # osmo # 垃圾啊 注入ics之后闪退
+    libsForQt5.qt5ct #配置qt外观
+    pkgs.shared-mime-info # 共享xdg mime
+    pkgs.glib
+    adwaita-icon-theme #基础图标
     # lxqt.pcmanfm-qt
-    pcmanfm
-    xfce.thunar
+    # pcmanfm
+    # xfce.thunar
+    xarchiver  # zip gui
     doublecmd
-    busybox
-    pkgs-new.xwayland-satellite
+    
+    # pkgs-new.xwayland-satellite
+    labwc-menu-generator
     waybar
     hyprlock
     # swaylock
@@ -408,15 +503,17 @@ in
     # labwc-tweaks
 
     # emptty
-    
+    pkgs-new.mihomo
     copyq
     gammastep #wayland色温调节
     
-    
+    busybox # 常用工具集
     distrobox
+    distrobox-tui
     podman-compose
     # kupfer
     xdg-utils
+    desktop-file-utils 
     inetutils
     # 光盘刻录
     # kdePackages.k3b
@@ -431,63 +528,73 @@ in
     git
     net-tools
     vim
+    kitty
     btop
     wget
     bash-completion
     tree
     gnome-extension-manager
     subversion
-    home-manager
+    pkgs-stable.home-manager
     looking-glass-client
-    gpaste
+    # gpaste
   ] ++ (with gnomeExtensions; [
-    dash-to-dock
-    # night-theme-switcher
-    clipboard-history
-    # gnome-shell-extension-desktop-icons
-    gsconnect
-    window-list
-    flickernaut
-    edit-desktop-files
-    # desktop-icons-ng-ding
-    desktop-lyric
-    dash-to-dock
-    dash-in-panel
-    add-to-desktop
-    fuzzy-app-search
-    appindicator
-    indicator
-    kimpanel
-    # workspaces-indicator-by-open-apps
-    window-title-is-back
-    network-stats
+    # dash-to-dock
+    # clipboard-history
+    # gsconnect
+    # window-list
+    # flickernaut
+    # edit-desktop-files
+    # dash-in-panel
+    # fuzzy-app-search
+    # appindicator
+    # indicator
+    # kimpanel
+    # network-stats
+    # trash
     # worksets
     #不兼容#gnomeExtensions.workspace-buttons-with-app-icons
     #不兼容#gnomeExtensions.window-list-in-panel
     #和window-list重复#gnomeExtensions.workspace-indicator
-
+    # new trash
+# workspaces-indicator-by-open-apps
+# window-title-is-back
+# night-theme-switcher
+# add-to-desktop
+# desktop-icons-ng-ding
+# desktop-lyric
+# gnome-shell-extension-desktop-icons
   ]);
   
   # Nekoray VPN
-  programs.nekoray = {
-    enable = false;  #source value is true	#comment by ylagr
-    tunMode.enable = true;  #source value is true	 #comment by ylagr
-  };
+  # programs.nekoray = {
+    # enable = false;  #source value is true	#comment by ylagr
+    # tunMode.enable = true;  #source value is true	 #comment by ylagr
+  # };
   programs.clash-verge = {
     package = pkgs-new.clash-verge-rev;
   	enable = true;
-	  autoStart = true;
+	  autoStart = false;
 	  serviceMode = true;
-  }; 
-  programs.niri = {
-    enable = true;
-    package = pkgs-new.niri;
   };
+  services.mihomo = {
+    package = pkgs-new.mihomo;
+    enable = true;
+    tunMode = true;
+    configFile="${homedir}/mihomo/config.yaml";
+    webui = pkgs-new.metacubexd;
+    # extraOpts= "-d /home/suiwp/mihomo";
+  };
+  # programs.niri = {
+    # enable = true;
+    # package = pkgs-new.niri;
+  # };
   fonts.packages = with pkgs; [
     font-awesome
     adwaita-fonts
     noto-fonts
-    ubuntu_font_family
+    # ubuntu_font_family # replace to ubuntu-classic
+    ubuntu-classic
     #nerd-fonts.arimo
     wqy_microhei
     noto-fonts-color-emoji
@@ -515,6 +622,7 @@ in
       sansSerif = [ "WenQuanYi Micro Hei"];
       monospace = [ "Fantasque Sans Mono"  "ubuntu mono" "unifont" "WenQuanYi Micro Hei" ];
       serif = ["WenQuanYi Micro Hei"];
+      emoji = [ "Noto Color Emoji" ];
     };
   };
   # Some programs need SUID wrappers, can be configured further or are

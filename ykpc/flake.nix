@@ -100,6 +100,7 @@
           };
           modules = [
             ./host/ykworkpc/configuration.nix
+            ./module/font-plangothic.nix
             # ./noctalia.nix
             # home-manager.nixosModules.home-manager
             # {

@@ -128,23 +128,24 @@ in
       # fcitx5-rime-lua5_3_compat
       # fcitx5-rime
       fcitx5-gtk
-      # kdePackages.fcitx5-qt
+      kdePackages.fcitx5-qt
     ];
   };
   environment.etc."xdg/gtk-2.0/gtkrc".text = ''
     gtk-im-module="fcitx"
-    gtk-font-name="Sans 12"
+
   '';
   environment.etc."xdg/gtk-3.0/settings.ini".text = ''
     [Settings]
     gtk-im-module=fcitx
-    gtk-font-name = Sans 12
+
   '';
   environment.etc."xdg/gtk-4.0/settings.ini".text = ''
     [Settings]
     gtk-im-module=fcitx
-    gtk-font-name = Sans 12
+
   '';
+  # gtk-font-name = Sans Serif 12
     
   documentation = {
     dev.enable = true;
@@ -397,7 +398,8 @@ in
   environment.variables = {
     # 通常，为了确保 fcitx 正常工作，建议同时设置以下变量：  
 	  # GTK_IM_MODULE = "fcitx";
-	  #XMODIFIERS = "@im=fcitx";  
+	  #XMODIFIERS = "@im=fcitx";
+    # QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
   };
   
   environment.sessionVariables = {
@@ -405,8 +407,8 @@ in
     NIXOS_OZONE_WL=1;
 	  QT_IM_MODULE = "fcitx";
     GTK_USE_PORTAL = "1";
-    QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
-    # QT_QPA_PLATFORMTHEME = "qt5ct";
+    # QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
+    QT_QPA_PLATFORMTHEME = "qt5ct";
     
   };
   #programs.emacs = {
@@ -436,7 +438,7 @@ in
     # style = "kvantum";
     # platformTheme = "gnome";
     # platformTheme = "qt5ct";
-    style = "adwaita";
+    # style = "adwaita";
   };
 
   # Allow unfree packages
@@ -471,6 +473,7 @@ in
     # pkgs-new.orage # 功能太少了
     # osmo # 垃圾啊 注入ics之后闪退
     libsForQt5.qt5ct #配置qt外观
+    kdePackages.qt6ct #配置qt外观
     pkgs.shared-mime-info # 共享xdg mime
     pkgs.glib
     adwaita-icon-theme #基础图标
@@ -589,12 +592,18 @@ in
     # enable = true;
     # package = pkgs-new.niri;
   # };
+  fonts.fontDir.enable = true;
   fonts.packages = with pkgs; [
+    # 图标库
     font-awesome
+    # gnome 默认字体，比较圆润
     adwaita-fonts
+    # google 字体
     noto-fonts
     # ubuntu_font_family # replace to ubuntu-classic
     ubuntu-classic
+    fantasque-sans-mono
+    unifont
     #nerd-fonts.arimo
     wqy_microhei
     noto-fonts-color-emoji
@@ -603,7 +612,7 @@ in
     nerd-fonts.bigblue-terminal
     # babelstone-han
     nerd-fonts.symbols-only
-    unifont
+    
     # windows-fonts
   ];
   fonts.fontconfig = {
@@ -619,10 +628,28 @@ in
     # enable = true;
     # };
     defaultFonts = {
-      sansSerif = [ "WenQuanYi Micro Hei"];
-      monospace = [ "Fantasque Sans Mono"  "ubuntu mono" "unifont" "WenQuanYi Micro Hei" ];
-      serif = ["WenQuanYi Micro Hei"];
-      emoji = [ "Noto Color Emoji" ];
+      sansSerif = [
+        "ubuntu"
+        # "Unifont"
+        "Noto Sans CJK SC"
+        "WenQuanYi Micro Hei"
+        "Noto Color Emoji"
+      ];
+      monospace = [ "Fantasque Sans Mono"  "ubuntu mono" "Unifont"
+                    # "WenQuanYi Micro Hei"
+                    "Noto Color Emoji"
+                  ];
+      # 默认应该使用宋体类型
+      serif = [
+        "Ubuntu"
+        "Unifont"
+        "Noto Sans CJK SC"
+        "WenQuanYi Micro Hei"
+        "Noto Color Emoji"
+      ];
+      emoji = [ "Noto Color Emoji"
+                "Noto Emoji"
+              ];
     };
   };
   # Some programs need SUID wrappers, can be configured further or are

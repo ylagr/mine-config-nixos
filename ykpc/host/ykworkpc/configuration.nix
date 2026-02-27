@@ -39,7 +39,7 @@ in
     "kvmfr"
   ];
   boot.extraModulePackages = [
-     config.boot.kernelPackages.kvmfr
+    config.boot.kernelPackages.kvmfr
   ];
   boot.extraModprobeConfig= ''
      options kvmfr static_size_mb=32
@@ -151,7 +151,7 @@ in
 
   '';
   # gtk-font-name = Sans Serif 12
-    
+  
   documentation = {
     dev.enable = true;
   };
@@ -211,12 +211,12 @@ in
       };
       
     };
-      # 确保 PCManFM 被设置为目录类型的默认关联
+    # 确保 PCManFM 被设置为目录类型的默认关联
     mime.defaultApplications = {
       # "inode/directory" = "pcmanfm.desktop";
     };
   };
-    # 2. 核心：通过 etc 模块化配置 XDG 行为
+  # 2. 核心：通过 etc 模块化配置 XDG 行为
   environment.etc = {
     # 强制所有用户（无论语言环境）的默认目录名为英文
     "xdg/user-dirs.defaults".text = ''
@@ -295,7 +295,7 @@ in
   # services.xserver.libinput.enable = true;
   services.libinput.enable = true;
   #   virtualisation.waydroid.enable = true;
-    # 启用 ARM 转译（Houdini）  
+  # 启用 ARM 转译（Houdini）  
   #virtualisation.waydroid.enableHoudini = true;
   # enable kvm
   programs.virt-manager.enable = true;
@@ -307,7 +307,7 @@ in
         "/dev/random", "/dev/urandom",
         "/dev/ptmx", "/dev/kvm",
         "/dev/kvmfr0"
-    ]
+                                                         ]
   '';
 
   programs.nix-ld.enable = true;
@@ -388,7 +388,7 @@ in
       
       chezmoi
       logseq
-##      wemeet
+      ##      wemeet
       virtiofsd # 解决kvm虚拟机挂载目录问题
       lazarus
       siyuan
@@ -411,8 +411,8 @@ in
       
       pkgs-new.gopeed
       kdePackages.kdeconnect-kde
-#      waydroid
-#      waydroid-helper
+      #      waydroid
+      #      waydroid-helper
       android-tools
       qqWrapper
       # pkgs-new.emacs-pgtk
@@ -455,6 +455,7 @@ in
 	  #XMODIFIERS = "@im=fcitx";
     # QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
     NIXPKGS_ALLOW_INSECURE=1;
+    TERMINAL = "kitty";
   };
   
   environment.sessionVariables = {
@@ -513,14 +514,21 @@ in
   programs.k3b = {
     enable = true;
   };
+  programs.command-not-found.enable = false;
+  # for home-manager, use programs.bash.initExtra instead
+  programs.bash.interactiveShellInit = ''
+      source ${pkgs.nix-index}/etc/profile.d/command-not-found.sh
+  '';
   # xdg.enable = true;
   services.blueman.enable = true;
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
     nix-search-cli
+    nix-index
     unrar
     xeyes
     xdriinfo
@@ -625,19 +633,19 @@ in
     #不兼容#gnomeExtensions.window-list-in-panel
     #和window-list重复#gnomeExtensions.workspace-indicator
     # new trash
-# workspaces-indicator-by-open-apps
-# window-title-is-back
-# night-theme-switcher
-# add-to-desktop
-# desktop-icons-ng-ding
-# desktop-lyric
-# gnome-shell-extension-desktop-icons
+    # workspaces-indicator-by-open-apps
+    # window-title-is-back
+    # night-theme-switcher
+    # add-to-desktop
+    # desktop-icons-ng-ding
+    # desktop-lyric
+    # gnome-shell-extension-desktop-icons
   ]);
   
   # Nekoray VPN
   # programs.nekoray = {
-    # enable = false;  #source value is true	#comment by ylagr
-    # tunMode.enable = true;  #source value is true	 #comment by ylagr
+  # enable = false;  #source value is true	#comment by ylagr
+  # tunMode.enable = true;  #source value is true	 #comment by ylagr
   # };
   programs.clash-verge = {
     package = pkgs-new.clash-verge-rev;
@@ -654,8 +662,8 @@ in
     # extraOpts= "-d /home/suiwp/mihomo";
   };
   # programs.niri = {
-    # enable = true;
-    # package = pkgs-new.niri;
+  # enable = true;
+  # package = pkgs-new.niri;
   # };
   fonts.fontDir.enable = true;
   fonts.packages = with pkgs; [

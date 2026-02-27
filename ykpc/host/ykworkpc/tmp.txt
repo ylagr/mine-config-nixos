@@ -1,6 +1,6 @@
 sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
 
-https://yuedy.xn--xpxs85a.xn--io0a7i/link/hywAPErkjrfbotjH?clash=1
+nix run github:nix-community/nix-index-database -- libXrender.so.1
 
 
       <model type="qxl" ram="65536" vram="65536" vgamem="16384" heads="1" primary="yes"/>

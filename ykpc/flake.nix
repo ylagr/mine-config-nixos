@@ -1,5 +1,10 @@
 
 {
+  nixConfig = {
+    extra-substituters = [ "https://nix-community.cachix.org" ];
+    extra-trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="];
+    
+  };
   # description = "NixOS flake-configuration with Noctalia";
   inputs = {
     # nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
@@ -20,12 +25,22 @@
       url =  "github:nixos/nixpkgs/nixos-unstable";
       
     };
+    nur = {
+      url = "github:nix-community/nur";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       # url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
+      # 添加这一行
+    nix-alien = {
+      url = "github:thiagokokada/nix-alien";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+        
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs-new";
@@ -44,13 +59,14 @@
   }; 
 
 
-  outputs = inputs@{ self, nixpkgs-stable, nixpkgs,nixpkgs-sys, home-manager, emacs-overlay, chinese-fonts-overlay, nixpkgs-new,  ... }:
+  outputs = inputs@{ self, nixpkgs-stable, nixpkgs,nixpkgs-sys, home-manager, emacs-overlay, chinese-fonts-overlay, nixpkgs-new, nur,  ... }:
     let
       system = "x86_64-linux";
       # pkgs = import inputs.nixpkgs-stable {
       pkgs = import inputs.nixpkgs {
         inherit system;
         config.allowUnfree = true;
+        overlays = [nur.overlays.default];
       };
       pkgs-new = import inputs.nixpkgs-new {
         config.allowUnfree = true;
@@ -101,6 +117,8 @@
           modules = [
             ./host/ykworkpc/configuration.nix
             ./module/font-plangothic.nix
+            ./module/font-iosevkaylagr.nix
+            ./module/nix-alien.nix
             # ./noctalia.nix
             # home-manager.nixosModules.home-manager
             # {
@@ -115,6 +133,7 @@
         
       };
       home-manager.userUserpackages = true;
+      home-manager.useGlobalPkgs = true;
       homeConfigurations.suiwp =
           let
             username = suiwp;

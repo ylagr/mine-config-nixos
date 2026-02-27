@@ -53,6 +53,9 @@ in
     };
 
   };
+  # zram swap
+  zramSwap.enable = true;
+  
   # support graphic
   hardware.graphics = {
     enable = true;
@@ -68,6 +71,8 @@ in
   # };
   # Enable flakes
   # nix.package = pkgs-sys.nix;
+  nix.settings.accept-flake-config = true;
+  nix.settings.trusted-users = [ "root" "@wheel" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = [ 
     "https://mirrors.ustc.edu.cn/nix-channels/store"
@@ -179,21 +184,30 @@ in
       wlr.enable = true;
       # lxqt.enable = true;
       extraPortals = [
+        # pkgs.kdePackages.xdg-desktop-portal-kde
         pkgs.xdg-desktop-portal-gtk
         # pkgs.lxqt.xdg-desktop-portal-lxqt
         # pkgs.xdg-desktop-portal-wlr
       ];
       # config.common.default = "*";
       config.common = {
-        default = [ "wlr" "gtk" "*" ];
-        "org.freedesktop.impl.portal.FileChooser" = [ "wlr" "gtk" "*" ];
-        "org.freedesktop.impl.portal.OpenURI" = [ "wlr" "gtk" "*"];
+        default = [ "wlr" "kde" "gtk" "*" ];
+        "org.freedesktop.impl.portal.FileChooser" = [ "wlr"
+                                                      # "kde"
+                                                      "gtk" "*" ];
+        "org.freedesktop.impl.portal.OpenURI" = [ "wlr"
+                                                  # "kde"
+                                                  "gtk" "*"];
         # "org.freedesktop.impl.portal.FileChooser" = "lxqt";
         # "org.freedesktop.impl.portal.OpenURI" = "lxqt";
       };
       config.labwc = {
-        "org.freedesktop.impl.portal.FileChooser" = [ "wlr" "gtk" "*" ];
-        "org.freedesktop.impl.portal.OpenURI" = [ "wlr" "gtk" "*"];
+        "org.freedesktop.impl.portal.FileChooser" = [ "wlr"
+                                                      # "kde"
+                                                      "gtk" "*" ];
+        "org.freedesktop.impl.portal.OpenURI" = [ "wlr"
+                                                  # "kde"
+                                                  "gtk" "*"];
       };
       
     };
@@ -202,6 +216,34 @@ in
       # "inode/directory" = "pcmanfm.desktop";
     };
   };
+    # 2. 核心：通过 etc 模块化配置 XDG 行为
+  environment.etc = {
+    # 强制所有用户（无论语言环境）的默认目录名为英文
+    "xdg/user-dirs.defaults".text = ''
+      DESKTOP=,desktop
+      DOWNLOAD=,downloads
+      TEMPLATES=,templates
+      PUBLICSHARE=,public
+      DOCUMENTS=,documents
+      MUSIC=,music
+      PICTURES=,pictures
+      VIDEOS=,videos
+    '';
+
+    # 关键：彻底禁用“基于 Locale 自动更新目录”的功能
+    # 这样即使 LC_ALL 是中文，程序看到 enabled=false 也会直接退出，不进行翻译
+    # "xdg/user-dirs.conf".text = "enabled=false";
+
+    # 伪造 Locale 记录，让系统认为上次和这次都是英文环境
+    "xdg/user-dirs.locale".text = "C";
+  };
+
+  # 3. 强制在用户登录时刷新一次（适配 labwc 等不自动刷新的环境）
+  environment.extraInit = ''
+    if [ -x ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update ]; then
+      ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update --force
+    fi
+  '';
   
   services.xserver.displayManager.sessionCommands = ''
     ${pkgs.xfce.thunar}/bin/thunar --daemon &
@@ -226,6 +268,7 @@ in
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+  services.printing.cups-pdf.enable = true;
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
@@ -284,7 +327,14 @@ in
     fontconfig    # 如果用 GUI 或 AWT/Swing，可能还需要更多
     # lua
     # lua5_3_compat
+    ## appimage使用
+    fuse3
+    fuse
   ];
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
 
   programs.gamescope = {
     enable = true;
@@ -293,10 +343,12 @@ in
 
   services.flatpak.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.groups.docker = {};
   users.users.suiwp = {
     isNormalUser = true;
     description = "suiwp";
-    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" ];
+    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" "docker" "oracle" ];
+    
     packages = with pkgs; [
       lua
       cmake
@@ -316,7 +368,7 @@ in
       # file-roller
       # nautilus-python
 
-      gnome-software
+      # gnome-software
       # gnome-text-editor
       gnome-calendar
       
@@ -333,6 +385,7 @@ in
       
       multimarkdown
       nix-tree
+      
       chezmoi
       logseq
 ##      wemeet
@@ -352,9 +405,10 @@ in
       pkgs-new.wpsoffice-cn
       fastfetch
       steam
+      steam-run
       
-      wechat
-      appimage-run
+      # wechat #使用自动更新的wechat appimage了，nixos的不能实时更新
+      
       pkgs-new.gopeed
       kdePackages.kdeconnect-kde
 #      waydroid
@@ -400,6 +454,7 @@ in
 	  # GTK_IM_MODULE = "fcitx";
 	  #XMODIFIERS = "@im=fcitx";
     # QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
+    NIXPKGS_ALLOW_INSECURE=1;
   };
   
   environment.sessionVariables = {
@@ -423,8 +478,11 @@ in
   virtualisation.oci-containers.backend = "podman";
   virtualisation.podman = {
     enable = true;
-    dockerCompat = true;
+    # dockerCompat = true;
     defaultNetwork.settings.dns_enabled = true;
+  };
+  virtualisation.docker = {
+    enable = true;
   };
   # Install firefox.
   programs.firefox.enable = true;
@@ -449,7 +507,8 @@ in
     # packages = pkgs-new.thunar;
     plugins = with pkgs-new; [ thunar-archive-plugin thunar-volman thunar-vcs-plugin];
   };
-  
+  services.tumbler.enable = true;
+
   
   programs.k3b = {
     enable = true;
@@ -461,6 +520,8 @@ in
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    nix-search-cli
+    unrar
     xeyes
     xdriinfo
     zip
@@ -469,6 +530,8 @@ in
     wl-clipboard # 解决剪贴板问题
     # lxmenu-data
     lxqt.lxqt-policykit
+    kdePackages.systemsettings
+    kdePackages.discover
     # lxqt.lxqt-config #用于图标主题
     # pkgs-new.orage # 功能太少了
     # osmo # 垃圾啊 注入ics之后闪退
@@ -485,6 +548,7 @@ in
     
     # pkgs-new.xwayland-satellite
     labwc-menu-generator
+    dex #自动识别desktop文件开始启动
     waybar
     hyprlock
     # swaylock
@@ -516,6 +580,7 @@ in
     podman-compose
     # kupfer
     xdg-utils
+    xdg-user-dirs
     desktop-file-utils 
     inetutils
     # 光盘刻录
@@ -594,6 +659,7 @@ in
   # };
   fonts.fontDir.enable = true;
   fonts.packages = with pkgs; [
+    iosevka
     # 图标库
     font-awesome
     # gnome 默认字体，比较圆润
@@ -607,8 +673,8 @@ in
     #nerd-fonts.arimo
     wqy_microhei
     noto-fonts-color-emoji
-    # noto-fonts-cjk-sans
-    # noto-fonts-cjk-serif
+    noto-fonts-cjk-sans
+    noto-fonts-cjk-serif
     nerd-fonts.bigblue-terminal
     # babelstone-han
     nerd-fonts.symbols-only

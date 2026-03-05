@@ -117,7 +117,7 @@
           modules = [
             ./host/ykworkpc/configuration.nix
             ./module/font-plangothic.nix
-            ./module/font-iosevkaylagr.nix
+            ./module/font-iosevkaylagr-1.1.0.nix
             ./module/nix-alien.nix
             # ./noctalia.nix
             # home-manager.nixosModules.home-manager

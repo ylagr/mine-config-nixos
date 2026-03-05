@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, pkgs-stable, username, homedir, ... }:
+{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, pkgs-stable, username, homedir, inputs, ... }:
 let
   originalQQ = pkgs.qq;
   qqWrapper = pkgs.writeShellScriptBin "qq" ''
@@ -12,7 +12,18 @@ let
     rm -rf ~/.config/QQ/versions
     exec ${originalQQ}/bin/qq --disable-gpu "$@" 
   '';
-
+  # qqWrapper use appimage appimage有问题，还是用回原生qq吧
+  qqDesktop = pkgs.makeDesktopItem {
+    name = "QQDesktop";
+    desktopName = "QQDesktop";
+    genericName = "QQDesktop";
+    exec = "${qqWrapper}/bin/qq %U";
+    icon = "${originalQQ}/share/icons/hicolor/512x512/apps/qq.png"; # 或者指定一个本地图标路径
+    terminal = false;
+    categories = [ "Network" "Chat" ];
+    comment = "qq desktop";
+  };
+  
   librime-lua-with-lua5_4_compat = pkgs.librime-lua.override {
     lua = pkgs.lua5_4_compat;
   };
@@ -80,6 +91,10 @@ in
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store" 
     "https://cache.nixos.org/"
   ];
+  nix.registry = {
+    # to enable command ~ nix profile add sys#pkgname ~
+    sys.flake = inputs.nixpkgs-sys;
+  };
   #emacs-overlay = {
   #   url = "github:nix-community/emacs-overlay";
   #   inputs.nixpkgs.follows = "nixpkgs";
@@ -414,7 +429,8 @@ in
       #      waydroid
       #      waydroid-helper
       android-tools
-      qqWrapper
+      qqDesktop
+      # qqWrapper
       # pkgs-new.emacs-pgtk
       # pkgs-new.emacs-git
       # emacs-nox
@@ -521,7 +537,9 @@ in
   '';
   # xdg.enable = true;
   services.blueman.enable = true;
-
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = false;
+  
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -679,10 +697,12 @@ in
     fantasque-sans-mono
     unifont
     #nerd-fonts.arimo
+    sarasa-gothic
+    # source-han-sans #sarasa based on source-han-sans
     wqy_microhei
     noto-fonts-color-emoji
-    noto-fonts-cjk-sans
-    noto-fonts-cjk-serif
+    # noto-fonts-cjk-sans
+    # noto-fonts-cjk-serif
     nerd-fonts.bigblue-terminal
     # babelstone-han
     nerd-fonts.symbols-only
@@ -705,20 +725,31 @@ in
       sansSerif = [
         "ubuntu"
         # "Unifont"
-        "Noto Sans CJK SC"
+        "Sarasa Gothic SC"
+        "Sarasa Gothic TC"
+        "Sarasa"
         "WenQuanYi Micro Hei"
+        # "Source Han Sans SC"
+        "Noto Sans CJK SC"
         "Noto Color Emoji"
       ];
       monospace = [ "Fantasque Sans Mono"  "ubuntu mono" "Unifont"
-                    # "WenQuanYi Micro Hei"
+                    "Sarasa Term SC"
+                    "Sarasa Term TC"
+                    "Sarasa"
+                    "WenQuanYi Micro Hei"
                     "Noto Color Emoji"
                   ];
       # 默认应该使用宋体类型
       serif = [
         "Ubuntu"
         "Unifont"
-        "Noto Sans CJK SC"
-        "WenQuanYi Micro Hei"
+        "Sarasa Gothic SC"
+        "Sarasa Gothic TC"
+        "Sarasa"
+        # "WenQuanYi Micro Hei"
+        # "Source Han Sans SC"
+        "Noto Serif CJK SC"
         "Noto Color Emoji"
       ];
       emoji = [ "Noto Color Emoji"

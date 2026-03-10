@@ -13,3 +13,8 @@ https://github.com/MoeKoeMusic/MoeKoeMusic/releases
 * flatpak dingtalk
 ~flatpak install dingtalk~
 =flatpak remove dingtalk=
+
+* linux aliyunpan
+[[https://github.com/gaozhangmin/aliyunpan/releases/download/v3.24.41217/alixby-3.24.41217-linux-x86_64.AppImage]]
+[[https://github.com/gaozhangmin/aliyunpan/releases]]
+

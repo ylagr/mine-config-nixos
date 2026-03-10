@@ -182,11 +182,17 @@ in
   # 轻量替换gnome配套设施
   services.gnome.gnome-keyring.enable = true;
   services.upower.enable = true;
-  programs.dconf.enable = true;
+  programs.dconf.enable = false;
   security.pam.services.login.enableGnomeKeyring = true;
+
+  services.udisks2.enable = true; #硬件发现
+
+  # xfce 配套
+  # 1. 启用 Xfconf 核心服务（解决 Thunar 设置和系统配置存储）
+  programs.xfconf.enable = true;
   # 启用 GVfs 服务以支持网络挂载、垃圾桶等功能
   services.gvfs.enable = true;
-  services.udisks2.enable = true; #硬件发现
+  
   # services.gnome.evolution-data-server.enable = true;
   programs.evolution.enable = true;
   xdg = {
@@ -547,11 +553,12 @@ in
     #  wget
     nix-search-cli
     nix-index
-    unrar
     xeyes
     xdriinfo
     zip
     unzip
+    unrar
+    p7zip
     system-config-printer # 打印机 see also https://sspai.com/post/90194 ;; 需要打印机支持，
     wl-clipboard # 解决剪贴板问题
     # lxmenu-data
@@ -569,6 +576,7 @@ in
     # lxqt.pcmanfm-qt
     # pcmanfm
     # xfce.thunar
+    pkgs-new.thunar-archive-plugin
     xarchiver  # zip gui
     doublecmd
     

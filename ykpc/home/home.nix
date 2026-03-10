@@ -11,6 +11,8 @@
     "openssl-1.1.1w"
   ];
   home.packages = with pkgs;[
+    kdePackages.dolphin
+    syncthing
     lazyssh
     # termscp # 太卡了，试试lzsyssh
     # gitstatus # 10x faster impl of `git status` command # 不能加速gitstatus命令，只能用于shell的prompt

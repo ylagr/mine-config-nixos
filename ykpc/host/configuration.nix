@@ -4,25 +4,6 @@
 
 { config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, pkgs-stable, username, homedir, inputs, ... }:
 let
-  originalQQ = pkgs.qq;
-  qqWrapper = pkgs.writeShellScriptBin "qq" ''
-    export QT_IM_MODULE=fcitx
-    export GTK_IM_MODULE=fcitx
-    export XMODIFIERS='@im=fcitx'
-    rm -rf ~/.config/QQ/versions
-    exec ${originalQQ}/bin/qq --disable-gpu "$@" 
-  '';
-  # qqWrapper use appimage appimage有问题，还是用回原生qq吧
-  qqDesktop = pkgs.makeDesktopItem {
-    name = "QQDesktop";
-    desktopName = "QQDesktop";
-    genericName = "QQDesktop";
-    exec = "${qqWrapper}/bin/qq %U";
-    icon = "${originalQQ}/share/icons/hicolor/512x512/apps/qq.png"; # 或者指定一个本地图标路径
-    terminal = false;
-    categories = [ "Network" "Chat" ];
-    comment = "qq desktop";
-  };
   
   librime-lua-with-lua5_4_compat = pkgs.librime-lua.override {
     lua = pkgs.lua5_4_compat;
@@ -181,8 +162,10 @@ in
   # services.desktopManager.gnome.enable = true;
   # 轻量替换gnome配套设施
   services.gnome.gnome-keyring.enable = true;
-  services.upower.enable = true;
-  programs.dconf.enable = false;
+  services.upower.enable = true;  # 自动监控硬件相关
+    # 启用 power-profiles-daemon
+  services.power-profiles-daemon.enable = true; # 简单性能管理工具
+  # programs.dconf.enable = false;
   security.pam.services.login.enableGnomeKeyring = true;
 
   services.udisks2.enable = true; #硬件发现
@@ -192,7 +175,14 @@ in
   programs.xfconf.enable = true;
   # 启用 GVfs 服务以支持网络挂载、垃圾桶等功能
   services.gvfs.enable = true;
-  
+  services.xserver.desktopManager.xfce = {
+    enable = true;
+    enableWaylandSession = true;
+    # enableXfwm = false;
+    enableXfwm = true;
+    enableScreensaver = true;
+  };
+  # services.xserver.windowManager.openbox.enable = true;
   # services.gnome.evolution-data-server.enable = true;
   programs.evolution.enable = true;
   xdg = {
@@ -202,7 +192,7 @@ in
     portal = {
       enable = true;
       xdgOpenUsePortal = false;
-      wlr.enable = true;
+      # wlr.enable = true;
       # lxqt.enable = true;
       extraPortals = [
         # pkgs.kdePackages.xdg-desktop-portal-kde
@@ -212,11 +202,15 @@ in
       ];
       # config.common.default = "*";
       config.common = {
-        default = [ "wlr" "kde" "gtk" "*" ];
-        "org.freedesktop.impl.portal.FileChooser" = [ "wlr"
+        default = [
+          # "wlr"
+          "gtk" "*" ];
+        "org.freedesktop.impl.portal.FileChooser" = [
+          # "wlr"
                                                       # "kde"
                                                       "gtk" "*" ];
-        "org.freedesktop.impl.portal.OpenURI" = [ "wlr"
+        "org.freedesktop.impl.portal.OpenURI" = [
+          # "wlr"
                                                   # "kde"
                                                   "gtk" "*"];
         # "org.freedesktop.impl.portal.FileChooser" = "lxqt";
@@ -257,21 +251,37 @@ in
 
     # 伪造 Locale 记录，让系统认为上次和这次都是英文环境
     "xdg/user-dirs.locale".text = "C";
+
+    # rofi 插件添加
+    "rofi/config.rasi".text = ''
+      configuration = {
+       plugin-path = "${pkgs.rofi-calc}/lib/rofi";
+      }
+       
+    '';
   };
 
   # 3. 强制在用户登录时刷新一次（适配 labwc 等不自动刷新的环境）
-  environment.extraInit = ''
-    if [ -x ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update ]; then
-      ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update --force
+environment.extraInit = ''
+  if [ -x ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update ]; then
+    ${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update --force
+  fi
+    if [ "$XDG_SESSION_TYPE" = "x11" ]; then
+      export GTK_IM_MODULE=fcitx
+      export QT_IM_MODULE=fcitx
+      export XMODIFIERS="@im=fcitx"
+      export SDL_IM_MODULE=fcitx
+      export GLFW_IM_MODULE=ibus
     fi
-  '';
-  
+'';
+
+  #  labwc的配置需要
   services.xserver.displayManager.sessionCommands = ''
     ${pkgs.xfce.thunar}/bin/thunar --daemon &
-    dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroot
+    # dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroot
   '';
   services.displayManager.ly.enable = true;
-  services.displayManager.ly.x11Support = false;
+  services.displayManager.ly.x11Support = true;
   services.displayManager.ly.settings = {
     # animation = "matrix";
     session_log = ".local/state/ly-session.log";
@@ -411,7 +421,7 @@ in
       logseq
       ##      wemeet
       virtiofsd # 解决kvm虚拟机挂载目录问题
-      lazarus
+      
       siyuan
       pnpm
       nodejs_24
@@ -435,7 +445,7 @@ in
       #      waydroid
       #      waydroid-helper
       android-tools
-      qqDesktop
+      # qqDesktop
       # qqWrapper
       # pkgs-new.emacs-pgtk
       # pkgs-new.emacs-git
@@ -489,6 +499,7 @@ in
     QT_QPA_PLATFORMTHEME = "qt5ct";
     
   };
+
   #programs.emacs = {
   #  enable = false;
   #  package = pkgs.emacs-igc-pgtk.pkgs.withPackages (epkgs: with epkgs; [ 
@@ -528,11 +539,11 @@ in
   programs.thunar = {
     enable = true;
     # packages = pkgs-new.thunar;
-    plugins = with pkgs-new; [ thunar-archive-plugin thunar-volman thunar-vcs-plugin];
+    plugins = with pkgs-new; [ pkgs.xfce.thunar-archive-plugin thunar-volman thunar-vcs-plugin];
   };
   services.tumbler.enable = true;
 
-  
+
   programs.k3b = {
     enable = true;
   };
@@ -542,10 +553,17 @@ in
       source ${pkgs.nix-index}/etc/profile.d/command-not-found.sh
   '';
   # xdg.enable = true;
+  services.fprintd.enable = true;
+  services.fprintd.tod = {
+    enable = true;
+    # 尝试使用 libfprint-2-tod1-elan 驱动插件
+    driver = pkgs.libfprint-2-tod1-elan;
+    # driver = pkgs.libfprint-2-tod1-vfs0090; 
+  };
   services.blueman.enable = true;
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = false;
-  
+  services.seatd.enable = true;
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -555,16 +573,19 @@ in
     nix-index
     xeyes
     xdriinfo
+    wlrctl # wlroot wayland 工具
+    tmux # 终端复用器
     zip
     unzip
     unrar
     p7zip
+    steam
     system-config-printer # 打印机 see also https://sspai.com/post/90194 ;; 需要打印机支持，
     wl-clipboard # 解决剪贴板问题
     # lxmenu-data
-    lxqt.lxqt-policykit
-    kdePackages.systemsettings
-    kdePackages.discover
+    lxqt.lxqt-policykit # 使用xfce了，用上gnome的了
+    # kdePackages.systemsettings  # useless
+    # kdePackages.discover   # soft manager
     # lxqt.lxqt-config #用于图标主题
     # pkgs-new.orage # 功能太少了
     # osmo # 垃圾啊 注入ics之后闪退
@@ -576,9 +597,9 @@ in
     # lxqt.pcmanfm-qt
     # pcmanfm
     # xfce.thunar
-    pkgs-new.thunar-archive-plugin
+    # pkgs-new.thunar-archive-plugin # 添加这里没什么用
     xarchiver  # zip gui
-    doublecmd
+    # doublecmd 用的很少  thunar足够好用了
     
     # pkgs-new.xwayland-satellite
     labwc-menu-generator
@@ -588,27 +609,36 @@ in
     # swaylock
     # fuzzel
     rofi
+    rofi-calc
     wayidle
     swayidle
     # wofi
-    wdisplays
-    swaynotificationcenter
+    wdisplays #用上 xfce了
+    swaynotificationcenter #用上xfce了
     networkmanagerapplet
     # sfwbar
     blueman
-    # redshift # x11 色温调节
+    
     wlr-randr
-    kanshi
+    kanshi # 用上xfce了
     # cliphist # 使用copyq
     # ydotool # need ydotoold running
     # labwc-tweaks
 
     # emptty
-    pkgs-new.mihomo
+    # pkgs-new.mihomo # 已经使用service配置了
     copyq
     gammastep #wayland色温调节
     
-    busybox # 常用工具集
+    redshift # x11 色温调节
+    wmctrl # x11 窗口控制工具，用于快捷键移动
+    xdotool
+    xorg.xwininfo # 控制窗口脚本使用，查看窗口信息
+    xprop # 控制窗口脚本使用， 查看窗口信息
+    
+    # busybox # 常用工具集
+    coreutils # 比busybox功能多
+    usbutils
     distrobox
     distrobox-tui
     podman-compose
@@ -640,6 +670,10 @@ in
     pkgs-stable.home-manager
     looking-glass-client
     # gpaste
+
+    # window move tool
+    (callPackage ../module/win-tool.nix { })
+
   ] ++ (with gnomeExtensions; [
     # dash-to-dock
     # clipboard-history

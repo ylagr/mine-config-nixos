@@ -1,5 +1,14 @@
 sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
 
+#解决 nodejs历史版本问题，其他软件也差不多
+NIXPKGS_ALLOW_INSECURE=1 nix shell --impure nixpkgs/23.05#nodejs-16_x
+NIXPKGS_ALLOW_INSECURE=1 nix-shell -p nodejs_16 -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/nixos-23.05.tar.gz
+
+# 保留5个版本
+home-manager expire-generations "5"
+# 保留30天版本
+home-manager expire-generations "30d"
+
 nix run github:nix-community/nix-index-database -- libXrender.so.1
 
 

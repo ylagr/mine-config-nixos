@@ -115,7 +115,7 @@
             # };
           };
           modules = [
-            ./host/ykworkpc/configuration.nix
+            ./host/configuration.nix
             ./module/font-plangothic.nix
             ./module/font-iosevkaylagr-1.1.0.nix
             ./module/nix-alien.nix
@@ -144,6 +144,7 @@
               extraSpecialArgs = { inherit inputs username homedir pkgs-new pkgs-sys; };
               modules = [
                 ./home/home.nix
+                ./module/qq.nix
               ];
             };
       # nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {

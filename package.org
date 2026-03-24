@@ -18,3 +18,6 @@ https://github.com/MoeKoeMusic/MoeKoeMusic/releases
 [[https://github.com/gaozhangmin/aliyunpan/releases/download/v3.24.41217/alixby-3.24.41217-linux-x86_64.AppImage]]
 [[https://github.com/gaozhangmin/aliyunpan/releases]]
 
+* themes
+https://github.com/B00merang-Project/Windows-XP.git
+

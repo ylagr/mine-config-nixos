@@ -13,6 +13,7 @@ https://github.com/MoeKoeMusic/MoeKoeMusic/releases
 * flatpak dingtalk
 ~flatpak install dingtalk~
 =flatpak remove dingtalk=
+=nur dingtalk= 
 
 * linux aliyunpan
 [[https://github.com/gaozhangmin/aliyunpan/releases/download/v3.24.41217/alixby-3.24.41217-linux-x86_64.AppImage]]
@@ -20,4 +21,9 @@ https://github.com/MoeKoeMusic/MoeKoeMusic/releases
 
 * themes
 https://github.com/B00merang-Project/Windows-XP.git
+
+
+* gtd soft
+https://super-productivity.com/download/
+# 使用最新版才能互相同步，nixos上面的太老了
 

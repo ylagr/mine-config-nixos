@@ -13,7 +13,7 @@
   home.packages = with pkgs;[
     # kdePackages.spectacle
     # kdePackages.dolphin  # 影响gopeed了
-    super-productivity  # gtd soft
+    # super-productivity  # gtd soft  # 使用最新版的appimage了，
     nodenv # node manager version
     dbeaver-bin
     lazarus # Pascal编辑器

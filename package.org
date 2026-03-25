@@ -29,4 +29,14 @@ https://super-productivity.com/download/
 
 * linux theme
 https://github.com/B00merang-Project/Windows-XP.git
-mkdir -p ~/.themes && cp Windows-XP/* ~/.themes
+# $_ 是shell上一个命令的最后一个参数
+mkdir -p ~/thirdparty/theme-xfce && cd $_ \
+&& git clone https://github.com/B00merang-Project/Windows-XP.git --depth=1
+mkdir -p ~/.themes && ln -s  ~/thirdparty/theme-xfce/Windows-XP/* ~/.themes
+
+* fcitx5-linux theme
+mkdir -p ~/thirdparty/theme-fcitx5 && cd $_ \
+&& git clone https://github.com/Reverier-Xu/Ori-fcitx5.git --depth=1
+ln -s ~/thirdparty/theme-fcitx5/Ori-fcitx5/OriDark ~/.local/share/fcitx5/themes/OriDark
+
+

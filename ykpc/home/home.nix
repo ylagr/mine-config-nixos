@@ -10,7 +10,13 @@
     # enable dingtalk can use
     "openssl-1.1.1w"
   ];
+  programs.rofi = {
+    enable = true;
+    plugins = [ pkgs.rofi-calc ];
+  };
   home.packages = with pkgs;[
+    # lutris
+    keepassxc
     # kdePackages.spectacle
     # kdePackages.dolphin  # 影响gopeed了
     # super-productivity  # gtd soft  # 使用最新版的appimage了，
@@ -23,6 +29,8 @@
     syncthing
     opencode
     claude-code
+
+    codex
     lazyssh
     yazi
     termscp # 太卡了，试试lzsyssh  可能是网络导致的卡

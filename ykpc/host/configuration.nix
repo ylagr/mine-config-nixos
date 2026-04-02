@@ -252,7 +252,7 @@ in
     # 伪造 Locale 记录，让系统认为上次和这次都是英文环境
     "xdg/user-dirs.locale".text = "C";
 
-    # rofi 插件添加
+    # rofi 插件添加 #rofi在用户目录有配置的时候，不使用系统的配置，所以使用使用home.nix处理
     "rofi/config.rasi".text = ''
       configuration = {
        plugin-path = "${pkgs.rofi-calc}/lib/rofi";
@@ -381,103 +381,93 @@ environment.extraInit = ''
     extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" "docker" "oracle" ];
     
     packages = with pkgs; [
-      lua
-      cmake
-      dconf-editor
-      bottom
-      cachix
-      gcolor3 #颜色选择器
-      ripgrep
-      fzf
-      zoxide
-      ollama
-      universal-ctags
-      librime-with-lua5_4_compat
+      android-tools
       bitwarden-desktop
-      # nemo-with-extensions
-      # nautilus
+      bottom
+      # bottles
+      brasero
+      chezmoi
+      cmake
+      cachix
+      dconf-editor
+      # emacs-nox
+      # emacs
       # file-roller
-      # nautilus-python
-
+      fzf
+      ffmpeg
+      fastfetch
+      (flameshot.override { enableWlrSupport = true; })
+      # gifgen    #这个是转换的工具，不是实时录制
+      gcolor3 #颜色选择器
       # gnome-software
       # gnome-text-editor
-      gnome-calendar
-      
-      scrcpy
-      python3
-      slurp #区域选择工具
-      wf-recorder
-      # kooha                     # 仅支持gnome
-      ffmpeg
-      openvpn
-      # networkmanager-openvpn
       # gamescope
-
-      
-      multimarkdown
-      nix-tree
-      
-      chezmoi
-      logseq
-      ##      wemeet
-      virtiofsd # 解决kvm虚拟机挂载目录问题
-      
-      siyuan
-      pnpm
-      nodejs_24
+      gnome-calendar
+      pkgs-new.gopeed
       helix
-      brasero
-      #  thunderbird
       # jetbrains.idea-ultimate
       pkgs-new.jetbrains.idea
       jdk8
-      telegram-desktop
-      onedrive
-      pkgs-new.wpsoffice-cn
-      fastfetch
-      steam
-      steam-run
-      
-      # wechat #使用自动更新的wechat appimage了，nixos的不能实时更新
-      
-      pkgs-new.gopeed
       kdePackages.kdeconnect-kde
-      #      waydroid
-      #      waydroid-helper
-      android-tools
+      # kooha                     # 仅支持gnome
+      logseq
+      librime-with-lua5_4_compat
+      lua
+      multimarkdown
+      nodejs_24
+      # nemo-with-extensions
+      # nautilus-python
+      # nautilus
+      # networkmanager-openvpn
+      openvpn
+      ollama
+      onedrive
+      podman-tui
+      pnpm
+      python3
       # qqDesktop
       # qqWrapper
-      # pkgs-new.emacs-pgtk
-      # pkgs-new.emacs-git
-      # emacs-nox
-      # emacs
-      podman-tui
-      # gifgen    #这个是转换的工具，不是实时录制
+      ripgrep
       snipaste
-      (flameshot.override { enableWlrSupport = true; })
+      slurp #区域选择工具
+      scrcpy
+      siyuan
+      steam
+      steam-run
+      samba
+      #  thunderbird
+      telegram-desktop
+      universal-ctags
+      virtiofsd # 解决kvm虚拟机挂载目录问题
+      wf-recorder
+      ##      wemeet
+      # wechat #使用自动更新的wechat appimage了，nixos的不能实时更新
+      pkgs-new.wpsoffice-cn
+      #      waydroid
+      #      waydroid-helper
       # support both 32-bit and 64-bit applications
       # wineWowPackages.stable
       # wineWowPackages.waylandFull
-      # bottles
-      # support 32-bit only
-      #wine
-
-      # support 64-bit only
-      #(wine.override { wineBuild = "wine64"; })
-
-      # support 64-bit only
-      #wine64
-
-      # wine-staging (version with experimental features)
-      #wineWowPackages.staging
-
-      # winetricks (all versions)
+      ## support 32-bit only
+      # wine
+      ## support 64-bit only
+      # (wine.override { wineBuild = "wine64"; })
+      ## support 64-bit only
+      # wine64
+      ## wine-staging (version with experimental features)
+      # wineWowPackages.staging
+      ## winetricks (all versions)
       # winetricks
+      # wineWow64Packages.stagingFull
+      ## native wayland support (unstable)
+      # wineWowPackages.waylandFull
+      # protontricks
 
-      # native wayland support (unstable)
-      #wineWowPackages.waylandFull
-      samba
+      zoxide
+
     ] ++ ( with pkgs-new; [
+      # pkgs-new.emacs-pgtk
+      # pkgs-new.emacs-git
       pkgs-new.emacs-git
     ]);
   };
@@ -539,7 +529,7 @@ environment.extraInit = ''
   programs.thunar = {
     enable = true;
     # packages = pkgs-new.thunar;
-    plugins = with pkgs-new; [ pkgs.xfce.thunar-archive-plugin thunar-volman thunar-vcs-plugin];
+    plugins = with pkgs; [ pkgs.xfce.thunar-archive-plugin xfce.thunar-volman xfce.thunar-vcs-plugin];
   };
   services.tumbler.enable = true;
 
@@ -567,10 +557,23 @@ environment.extraInit = ''
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    # sort by char 
+    
+    ncdu
+    libsecret
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    
+    # pkgs-sys.winetricks
+    # pkgs-sys.wineWow64Packages.stagingFull
+    lvm2_vdo
+    gparted
+    
     nix-search-cli
     nix-index
+    nix-init
+    nix-tree
+    
     xeyes
     xdriinfo
     wlrctl # wlroot wayland 工具
@@ -593,12 +596,19 @@ environment.extraInit = ''
     kdePackages.qt6ct #配置qt外观
     pkgs.shared-mime-info # 共享xdg mime
     pkgs.glib
+    # webkitgtk_4_1 # 解决tauri白屏问题
+    webkitgtk_6_0 # 解决tauri白屏问题
     adwaita-icon-theme #基础图标
+    powertop # 查看系统功耗
+    xfce.xfce4-panel-profiles
+    xfce.xfce4-weather-plugin
+    xfce.xfce4-genmon-plugin # 执行脚本并显示到panel里
     # lxqt.pcmanfm-qt
     # pcmanfm
     # xfce.thunar
     # pkgs-new.thunar-archive-plugin # 添加这里没什么用
-    xarchiver  # zip gui
+    # xarchiver  # zip gui
+    peazip
     # doublecmd 用的很少  thunar足够好用了
     
     # pkgs-new.xwayland-satellite
@@ -658,6 +668,7 @@ environment.extraInit = ''
     opencc
     gnumake
     git
+    lazygit
     net-tools
     vim
     kitty

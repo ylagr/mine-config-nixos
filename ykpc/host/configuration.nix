@@ -361,6 +361,7 @@ environment.extraInit = ''
     ## appimage使用
     fuse3
     fuse
+    
   ];
   programs.appimage = {
     enable = true;
@@ -558,7 +559,7 @@ environment.extraInit = ''
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     # sort by char 
-    
+    gcc
     ncdu
     libsecret
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.

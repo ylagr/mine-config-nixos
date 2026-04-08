@@ -15,6 +15,7 @@
     plugins = [ pkgs.rofi-calc ];
   };
   home.packages = with pkgs;[
+    # dropbox  # 同步半年也没见到文件
     # lutris
     keepassxc
     # kdePackages.spectacle

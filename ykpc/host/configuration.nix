@@ -45,6 +45,9 @@ in
     };
 
   };
+  boot.initrd.systemd.settings.Manager = {
+    DefaultTimeoutStopSec="15s";
+  };
   # zram swap
   zramSwap.enable = true;
   
@@ -361,6 +364,8 @@ environment.extraInit = ''
     ## appimage使用
     fuse3
     fuse
+    python3
+    perl
     
   ];
   programs.appimage = {
@@ -379,7 +384,7 @@ environment.extraInit = ''
   users.users.suiwp = {
     isNormalUser = true;
     description = "suiwp";
-    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" "docker" "oracle" ];
+    extraGroups = [ "networkmanager" "wheel" "cdrom" "disk" "libvirtd" "kvm" "video" "audio" "docker" "oracle" "input" ];
     
     packages = with pkgs; [
       android-tools
@@ -530,7 +535,7 @@ environment.extraInit = ''
   programs.thunar = {
     enable = true;
     # packages = pkgs-new.thunar;
-    plugins = with pkgs; [ pkgs.xfce.thunar-archive-plugin xfce.thunar-volman xfce.thunar-vcs-plugin];
+    plugins = with pkgs; [ pkgs.xfce.thunar-archive-plugin xfce.thunar-volman xfce.thunar-vcs-plugin xfce.thunar-dropbox-plugin];
   };
   services.tumbler.enable = true;
 
@@ -558,7 +563,8 @@ environment.extraInit = ''
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # sort by char 
+    # sort by char
+    bat
     gcc
     ncdu
     libsecret

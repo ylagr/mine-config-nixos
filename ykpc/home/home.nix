@@ -15,6 +15,8 @@
     plugins = [ pkgs.rofi-calc ];
   };
   home.packages = with pkgs;[
+    rapidsvn # svn gui
+    linux-wifi-hotspot # 开启热点工具
     # dropbox  # 同步半年也没见到文件
     # lutris
     keepassxc

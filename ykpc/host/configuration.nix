@@ -280,7 +280,7 @@ environment.extraInit = ''
 
   #  labwc的配置需要
   services.xserver.displayManager.sessionCommands = ''
-    ${pkgs.xfce.thunar}/bin/thunar --daemon &
+    # ${pkgs.xfce.thunar}/bin/thunar --daemon &
     # dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroot
   '';
   services.displayManager.ly.enable = true;
@@ -535,7 +535,10 @@ environment.extraInit = ''
   programs.thunar = {
     enable = true;
     # packages = pkgs-new.thunar;
-    plugins = with pkgs; [ pkgs.xfce.thunar-archive-plugin xfce.thunar-volman xfce.thunar-vcs-plugin xfce.thunar-dropbox-plugin];
+    plugins = with pkgs; [ pkgs.xfce.thunar-archive-plugin xfce.thunar-volman
+                           (pkgs.xfce.thunar-vcs-plugin.override { withSubversion = true; })
+                           # xfce.thunar-vcs-plugin
+                           xfce.thunar-dropbox-plugin];
   };
   services.tumbler.enable = true;
 
@@ -563,6 +566,7 @@ environment.extraInit = ''
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    mate.engrampa
     # sort by char
     bat
     gcc

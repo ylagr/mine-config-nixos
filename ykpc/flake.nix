@@ -10,8 +10,10 @@
     # nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-sys.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-s.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+
     quickshell = {
       url = "github:outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -59,7 +61,7 @@
   }; 
 
 
-  outputs = inputs@{ self, nixpkgs-stable, nixpkgs,nixpkgs-sys, home-manager, emacs-overlay, chinese-fonts-overlay, nixpkgs-new, nur,  ... }:
+  outputs = inputs@{ self, nixpkgs-stable, nixpkgs,nixpkgs-sys,nixpkgs-s, home-manager, emacs-overlay, chinese-fonts-overlay, nixpkgs-new, nur,  ... }:
     let
       system = "x86_64-linux";
       # pkgs = import inputs.nixpkgs-stable {
@@ -77,6 +79,10 @@
         config.allowUnfree = true;
         inherit system;
         overlays = [chinese-fonts-overlay.overlays.default];
+      };
+      pkgs-s = import inputs.nixpkgs-s {
+        config.allowUnfree = true;
+        inherit system;
       };
       pkgs-stable = import inputs.nixpkgs-stable {
         config.allowUnfree = true;
@@ -97,7 +103,8 @@
     in {
       nix.settings.experimental-features = [ "nix-command" "flakes" ];
       # packages.${system}.sys = pkgs-sys;
-      legacyPackages.${system}.sys = pkgs-sys;
+      # legacyPackages.${system}.sys = pkgs-sys;
+      legacyPackages.${system}.s = pkgs-s;
       nixosConfigurations = {
         nixos = let
           system = "x86_64-linux";
@@ -106,7 +113,7 @@
         in nixpkgs.lib.nixosSystem {
           inherit system pkgs;
           specialArgs = {
-            inherit system inputs pkgs-new pkgs-sys pkgs-stable username homedir;
+            inherit system inputs pkgs-new pkgs-sys pkgs-stable username homedir pkgs-s;
             
             # pkgs-new = import inputs.nixpkgs-new {
             #   config.allowUnfree = true;
@@ -115,6 +122,11 @@
             # };
           };
           modules = [
+            {nix.registry = {
+               sys.flake = nixpkgs-sys;
+               s.flake = nixpkgs-s;
+             };}
+            # {nix.package = pkgs.lixPackageSets.stable.lix;}
             ./host/configuration.nix
             ./module/font-plangothic.nix
             ./module/font-iosevkaylagr-1.1.0.nix
@@ -127,7 +139,6 @@
             #   home-manager.extraSpecialArgs = {inherit inputs pkgs-new pkgs-sys;};
             # }
             # ({ config, lib, ... }: {   _module.args.pkgs-new = pkgs-new;})
-
           ];
         };
         

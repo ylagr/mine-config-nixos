@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, pkgs-stable, username, homedir, inputs, ... }:
+{ config, pkgs, lib, pkgs-new, nixpkgs-new, pkgs-sys, pkgs-stable, username, homedir, inputs, pkgs-s, ... }:
 let
   
   librime-lua-with-lua5_4_compat = pkgs.librime-lua.override {
@@ -48,6 +48,10 @@ in
   boot.initrd.systemd.settings.Manager = {
     DefaultTimeoutStopSec="15s";
   };
+  systemd.user.extraConfig = ''
+    "DefaultTimeoutStartSec=15"
+    "DefaultTimeoutStopSec=15"
+'';
   # zram swap
   zramSwap.enable = true;
   
@@ -75,10 +79,11 @@ in
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store" 
     "https://cache.nixos.org/"
   ];
-  nix.registry = {
+  # nix.registry = {
     # to enable command ~ nix profile add sys#pkgname ~
-    sys.flake = inputs.nixpkgs-sys;
-  };
+    # sys.flake = inputs.nixpkgs-sys;
+    # s.flake = inputs.nixpkgs-s;
+  # };
   #emacs-overlay = {
   #   url = "github:nix-community/emacs-overlay";
   #   inputs.nixpkgs.follows = "nixpkgs";
@@ -301,8 +306,8 @@ environment.extraInit = ''
   };
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
-  services.printing.cups-pdf.enable = true;
+  # services.printing.enable = true;
+  # services.printing.cups-pdf.enable = true;
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
@@ -483,7 +488,8 @@ environment.extraInit = ''
 	  #XMODIFIERS = "@im=fcitx";
     # QT_QPA_PLATFORMTHEME = "xdg-desktop-portal";
     NIXPKGS_ALLOW_INSECURE=1;
-    TERMINAL = "kitty";
+    # TERMINAL = "kitty";
+    TERMINAL = "ghostty";
   };
   
   environment.sessionVariables = {
@@ -566,6 +572,7 @@ environment.extraInit = ''
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    blesh
     mate.engrampa
     # sort by char
     bat
@@ -683,6 +690,8 @@ environment.extraInit = ''
     net-tools
     vim
     kitty
+    # pkgs-sys.ghostty
+    pkgs-s.ghostty
     btop
     wget
     bash-completion

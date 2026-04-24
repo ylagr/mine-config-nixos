@@ -25,10 +25,13 @@ in
     ];
 
   # Bootloader.
+  boot.initrd.availableKernelModules = [ "usb_storage" "sd_mod" ];
   boot.kernelModules = [
     "kvm-intel"
     "pktcdvd"
     "kvmfr"
+    "dm-mirror" # use to pvmove detact device-mapper target
+    "dm-thin-pool" # use lvcreate --thin 创建快照
   ];
   boot.extraModulePackages = [
     config.boot.kernelPackages.kvmfr
@@ -47,6 +50,10 @@ in
   };
   boot.initrd.systemd.settings.Manager = {
     DefaultTimeoutStopSec="15s";
+  };
+
+  boot.initrd.services.lvm = {
+    enable = true;
   };
   systemd.user.extraConfig = ''
     "DefaultTimeoutStartSec=15"
@@ -585,7 +592,7 @@ environment.extraInit = ''
     
     # pkgs-sys.winetricks
     # pkgs-sys.wineWow64Packages.stagingFull
-    lvm2_vdo
+    # lvm2_vdo # should use boot.lvm
     gparted
     
     nix-search-cli

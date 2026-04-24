@@ -17,6 +17,7 @@
   
   # programs.blesh.enable = true;
   home.packages = with pkgs;[
+    jetbrains.gateway
     # blesh
     # pkgs-new.ghostty
     rapidsvn # svn gui
@@ -37,7 +38,7 @@
     opencode
     claude-code
 
-    codex
+    # codex
     lazyssh
     yazi
     termscp # 太卡了，试试lzsyssh  可能是网络导致的卡

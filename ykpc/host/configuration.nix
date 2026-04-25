@@ -31,7 +31,7 @@ in
     "pktcdvd"
     "kvmfr"
     "dm-mirror" # use to pvmove detact device-mapper target
-    "dm-thin-pool" # use lvcreate --thin 创建快照
+#     "dm-thin-pool" # use lvcreate --thin 创建快照
   ];
   boot.extraModulePackages = [
     config.boot.kernelPackages.kvmfr
@@ -167,6 +167,7 @@ in
     dev.enable = true;
   };
 
+  services.envfs.enable = true; # 设置大多数常用包的依赖到fhs环境
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 

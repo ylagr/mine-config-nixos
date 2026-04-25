@@ -1,3 +1,4 @@
+flakeDir: ./ykpc/
 builds:
   exclude: []
   include:
@@ -9,4 +10,4 @@ builds:
     - nixosConfigurations.*
     - 'packages.aarch64-darwin.*'
     - 'packages.aarch64-linux.foo'
-  branch: main
+  branch: build
